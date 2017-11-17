@@ -229,6 +229,7 @@ void doInfraSend(char * cmd) {
   sscanf(cmd, "%x\n", &n);
   irsend.sendNEC(n, 32);
   Serial.println("M12");
+  irrecv.enableIRIn();
 }
 
 void doLCD(char * cmd) {
@@ -418,6 +419,7 @@ void parseCode(char * cmd) {
   switch (code) {
     case 0:
       echoVersion();
+      mini._codingMode = 1;
       break;
     case 1:
       doGetSensor(tmp);
@@ -506,7 +508,6 @@ void parseCmd(char * cmd) {
     parseCode(cmd + 1);
   }
 }
-
 void setup() {
   digitalWrite(EYE_LEFT, 1);
   digitalWrite(EYE_RIGHT, 1);

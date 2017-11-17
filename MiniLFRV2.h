@@ -33,9 +33,10 @@ private:
 	int spdR, spdL;
 	uint8_t _mode;
 public:
+	uint8_t _codingMode;
 	MiniLFRV2();
 	uint8_t mode();
-	uint8_t setMode(int i);
+	uint8_t setMode(int i); // todo: remove mode from lib
 	void updateMotorSpeed();
 	void updateMotorSpeed(int spdl, int spdr);
 	int echoTrace();

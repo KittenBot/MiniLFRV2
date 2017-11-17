@@ -8,6 +8,7 @@ Adafruit_NeoPixel ringrgb(15);
 MiniLFRV2::MiniLFRV2(){
 	tracing = false;
 	_mode = 0;
+	_codingMode = 0;
 
 	spdL = spdR = 0;
 	analogWrite(PIN_M1A, 0);
@@ -96,6 +97,7 @@ void MiniLFRV2::pidWork(float dcdiff)
 	pos = echoTrace();
 	btn1 = digitalRead(PIN_BTN1);
 	btn2 = digitalRead(PIN_BTN2);
+	if(_codingMode) return;
 	if (!tracing) {                                         //巡线标签
 		if (btn1 == 0) {
 			_mode = 0;
@@ -122,10 +124,7 @@ void MiniLFRV2::pidWork(float dcdiff)
 				return;
 		}
 	                                
-	}		
-		
-	
-	else {
+	}else{
 		switch (pos) {
 		case B00000:
 			outlineCnt++;
