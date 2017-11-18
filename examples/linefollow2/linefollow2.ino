@@ -10,7 +10,7 @@
 #include "Timer.h"
 #include "MiniLFRV2.h"
 
-#define FIRMWARE "Linefollow V2.6\r\n"
+#define FIRMWARE "Linefollow V2.7\r\n"
 #define SETUPLEN 32
 
 LiquidCrystal_I2C lcd(0x20, 16, 2); // set the LCD address to 0x20 for a 16 chars and 2 line display
@@ -99,6 +99,7 @@ void gyroCalibrate() {
           robotSetup.data.dcdiff = 1.0 + diffInte;
           syncRobotSetup();
           mini.updateMotorSpeed(0, 0);
+          Serial.println("M300");
           return;
         }
       }
