@@ -97,7 +97,6 @@ void MiniLFRV2::pidWork(float dcdiff)
 	pos = echoTrace();
 	btn1 = digitalRead(PIN_BTN1);
 	btn2 = digitalRead(PIN_BTN2);
-	if(_codingMode) return;
 	if (!tracing) {                                         //巡线标签
 		if (btn1 == 0) {
 			_mode = 0;
@@ -117,14 +116,14 @@ void MiniLFRV2::pidWork(float dcdiff)
              }
 			
 		}
-		if (btn2 == 0) {
+		if (btn2 == 0 && !_codingMode) {
 			while (!digitalRead(PIN_BTN2));
 			_mode = 1;
 			if (_mode == 1)
 				return;
 		}
 	                                
-	}else{
+	}else if(!_codingMode){
 		switch (pos) {
 		case B00000:
 			outlineCnt++;
