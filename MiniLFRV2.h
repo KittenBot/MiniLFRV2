@@ -11,10 +11,10 @@
 #define PIN_BTN1  7
 #define PIN_BTN2  8
 
-#define PIN_M1A	5
-#define PIN_M1B 6
-#define PIN_M2A 3
-#define PIN_M2B 11
+#define PIN_M1A	6
+#define PIN_M1B 5
+#define PIN_M2A 11
+#define PIN_M2B 3
 
 class MiniLFRV2
 {
