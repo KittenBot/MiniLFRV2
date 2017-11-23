@@ -23,53 +23,44 @@ private:
 	float Ki = 0.15; // 0.15
 	float Kd = 1200; //1200
 	float error, errorLast, erroInte;
-	int bias = 0;
-	int btn1, btn2;
-	int pos;
-	int outlineCnt = 0;
-	bool tracing = true;    //巡线标签
-	int adval[5];
-	int adcal[5];
-	int spdR, spdL;
-	uint8_t _mode;
+
 public:
-	uint8_t _codingMode;
 	MiniLFRV2();
-	uint8_t mode();
-	uint8_t setMode(int i); // todo: remove mode from lib
-	void updateMotorSpeed();
-	void updateMotorSpeed(int spdl, int spdr);
-	int echoTrace();
-	void pidWork(float dcdiff);
-	int GetSensor(unsigned char index);
-	int GetPos();
-	int GetSensorValue(int index);
-	float calcPid(float input);
-	void PidValue(float *p, float *i, float *d);
-	void SetPid(float p, float i, float d);
-	void buzz(int freq, int delay);
-
-	void SetThreshold(int index, int val);
-	int GetThreshold(int index);
-
-
-	void doEye(int left, int right);
-	float doDistance();
-	float doBattery();
-	int GetButton1();
-	int GetButton2();
-	void doCarMove(int fw, int lr,float dcdiff);
-	void move(int fw, int lr);
+	void init();
+	void loop();
+	// motor related
+	void speedSet(int spdl, int spdr);
+	void speedSet(int spdl, int spdr, int delay);
 	void stop();
-	void SetDCSpeed(int idx, int speed,float dcdiff);
-	void motorSpeed(int idx, int speed);
-	void HoverLight(int pix, int r, int g, int b);
-	void RingRGB(int pix, int r, int g, int b);
-	void FrontRGB(int pix, int r, int g, int b);
-	void avoid_mode(float dcdiff);
-
-protected:
-	int AD[5] = { A3,A2,A1,A0,A6 };
+	void motorDiffSet(float diff);
+	float motorDiffGet();
+	// peripheral
+	void buttonGet(int btn);
+	void eyeLedSet(int left, int right);
+	int distance();
+	float batteryVoltage();
+	// music 
+	void buzz(int freq, int delay);
+	void playNote(int note);
+	void playMusic(int music);
+	void playMusic(uint8_t * music);
+	// RGB
+	void rgbBrightness(int value);
+	void hoverRgb(int pix, int r, int g, int b);
+	void headRgb(int pix, int r, int g, int b);
+	// Sensor
+	int getSensor(int index);
+	void setSensorThreshold(int index, int value);
+	int getSensorThreshold(int index);
+	// LED matrix
+	void matrixShow(char * data);
+	void matrixShowTime(int hour, int minute);
+	void matrixShowString(char * str);
+	// Linefollow related
+	void updatePid(float p, float i, float d);
+	void pidLoop();
+	int thresholdCalibrate();
+	int motorCalibrate();
 
 };
 #endif
