@@ -17,11 +17,17 @@
 class MiniLFRV2
 {
 private:
-	float Kp = 90; // 80
-	float Ki = 0.15; // 0.15
-	float Kd = 1200; //1200
 	float error, errorLast, erroInte;
+  int rgbBrightness;
+  int outlineCnt;
+  int getTrace();
+  float calcPid(float input);
+   
 public:
+  float Kp = 90; // 80
+  float Ki = 0.15; // 0.15
+  float Kd = 1200; //1200
+  
 	MiniLFRV2();
 	void init();
   void loadSetup();
@@ -38,6 +44,8 @@ public:
 	void eyeLedSet(int left, int right);
 	float distance();
 	float batteryVoltage();
+  int infraReceive();
+  void infraSend(int hex);
 	// music 
 	void buzz(int freq, int duration);
 	void buzz(int freq, int duration, int delayms);
@@ -45,7 +53,7 @@ public:
 	void playMusic(int music);
 	void playMusic(uint8_t * music);
 	// RGB
-	void rgbBrightness(int value);
+	void setRgbBrightness(int value);
 	void hoverRgbShow(int pix, int r, int g, int b);
 	void headRgbShow(int pix, int r, int g, int b);
 	// Sensor
@@ -53,14 +61,13 @@ public:
 	void setSensorThreshold(int index, int value);
 	int getSensorThreshold(int index);
 	// LED matrix
-	void matrixShow(char * data);
+	void matrixShow(uint8_t * data);
 	void matrixShowTime(int hour, int minute);
-	void matrixShowString(char * str);
+	void matrixShowString(uint8_t * str);
 	// Linefollow related
 	void updatePid(float p, float i, float d);
-	void pidLoop();
-	int thresholdCalibrate();
-	int motorCalibrate();
-
+	int pidLoop();
+protected:
+  int AD[5] = { A3,A2,A1,A0,A6 };
 };
 #endif
