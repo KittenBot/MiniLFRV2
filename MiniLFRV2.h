@@ -18,7 +18,6 @@ class MiniLFRV2
 {
 private:
 	float error, errorLast, erroInte;
-  int rgbBrightness;
   int outlineCnt;
   int getTrace();
   float calcPid(float input);
@@ -50,8 +49,7 @@ public:
 	void buzz(int freq, int duration);
 	void buzz(int freq, int duration, int delayms);
 	void playNote(int note, int clap);
-	void playMusic(int music);
-	void playMusic(uint8_t * music);
+	void playMusic(const char * notes);
 	// RGB
 	void setRgbBrightness(int value);
 	void hoverRgbShow(int pix, int r, int g, int b);

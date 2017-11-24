@@ -6,6 +6,10 @@
 
 #define FIRMWARE "Linefollow V3.0\r\n"
 
+const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
+const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
+const char wedding[] = "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
+
 enum mode {
   IDLE,
   CODING,
@@ -198,6 +202,12 @@ void doBuzzer(char * cmd) {
   mini.buzz(freq, t);
 }
 
+void doNote(char * cmd){
+  int note, clap;
+  sscanf(cmd, "%d %d\n", &note, &clap);
+  mini.playNote(note, clap);
+}
+
 void doDcSpeed(char * cmd) {
   int spdl, spdr;
   sscanf(cmd, "%d %d\n", &spdl, &spdr);
@@ -294,6 +304,9 @@ void parseCode(char * cmd) {
     case 18: // buzzer
       doBuzzer(tmp);
       break;
+    case 19: // play note
+      doNote(tmp);
+      break;
     case 200:
       doDcSpeed(tmp);
       break;
@@ -372,7 +385,6 @@ void loop(){
       bufindex = 0;
     }
   }
-  
 }
 
 

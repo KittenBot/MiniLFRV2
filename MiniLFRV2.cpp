@@ -9,7 +9,8 @@
 
 Adafruit_NeoPixel hoverRgb(2);
 Adafruit_NeoPixel headRgb(2);
-Adafruit_8x16minimatrix ledMat = Adafruit_8x16minimatrix();
+// start from up-left
+Kittenbot_16x8matrix ledMat = Kittenbot_16x8matrix();
 
 decode_results irresult;
 uint32_t irdecoded = 0xffffffff;
@@ -44,13 +45,12 @@ void MiniLFRV2::init() {
   pinMode(PIN_BTN1, INPUT_PULLUP);
   pinMode(PIN_BTN2, INPUT_PULLUP);
   // rgb
-  rgbBrightness = 100;
   hoverRgb.begin();
   hoverRgb.setPin(PIN_RGB);
   headRgb.begin();
   headRgb.setPin(EYE_RIGHT);
   loadSetup();
-
+  ledMat.begin(0x70);
   hoverRgbShow(0,0,0,0);
   eyeLedSet(0,0);
 }
@@ -61,7 +61,7 @@ void MiniLFRV2::loadSetup(){
     robotSetup.buf[i] = EEPROM.read(i);
   }
   if (robotSetup.data.sign != 1223) {
-    Serial.println("Init robot setup");
+    //Serial.println("Init robot setup");
     memset(robotSetup.buf, 0, 16);
     robotSetup.data.sign = 1223;
     robotSetup.data.dcdiff = 1.0;
@@ -161,13 +161,11 @@ void MiniLFRV2::buzz(int freq, int duration, int delayms){
 }
 
 void MiniLFRV2::setRgbBrightness(int value){
-  rgbBrightness = value;
+  hoverRgb.setBrightness(value);
+  headRgb.setBrightness(value);
 }
 
 void MiniLFRV2::hoverRgbShow(int pix, int r, int g, int b){
-  r = map(r, 0, 255, 0, rgbBrightness);
-  g = map(g, 0, 255, 0, rgbBrightness);
-  b = map(b, 0, 255, 0, rgbBrightness);
   if (pix == 0) {
     for (int i = 0;i < 2;i++) {
       hoverRgb.setPixelColor(i, r, g, b);
@@ -180,9 +178,6 @@ void MiniLFRV2::hoverRgbShow(int pix, int r, int g, int b){
 }
 
 void MiniLFRV2::headRgbShow(int pix, int r, int g, int b){
-  r = map(r, 0, 255, 0, rgbBrightness);
-  g = map(g, 0, 255, 0, rgbBrightness);
-  b = map(b, 0, 255, 0, rgbBrightness);
   if (pix == 0) {
     for (int i = 0;i < 2;i++) {
       headRgb.setPixelColor(i, r, g, b);
@@ -208,7 +203,7 @@ int MiniLFRV2::getSensorThreshold(int index){
 
 void MiniLFRV2::matrixShow(uint8_t * data){
   ledMat.clear();
-  ledMat.drawBitmap(0, 0, data, 16, 8, LED_ON);
+  ledMat.drawBitmap(0, 0, data, 8, 8, LED_ON);
   ledMat.writeDisplay();
 }
 
@@ -322,6 +317,40 @@ uint32_t MiniLFRV2::infraReceive(){
   irdecoded = -1;   
   return ret;
 }
+
+// note map in ascii format a to g and octave 4
+const int noteMap[] = {440, 494, 262, 294, 330, 349, 392};
+
+void MiniLFRV2::playNote(int note, int clap){
+  int freq = 440.0f*pow(2, (note-69)/12);
+  int duration = clap * 125;
+  buzz(freq, duration, duration);
+}
+
+void MiniLFRV2::playMusic(const char * notes){
+  int freq;
+  int len = strlen(notes);
+  int octave = 4;
+  int duration = 500;
+  for(int i=0;i<len;i++){
+    if(notes[i]>='a' && notes[i]<='g'){
+      freq = noteMap[notes[i]-'a'];
+      //Serial.println("freq:"+String(freq));
+    }else if(notes[i]>='2' && notes[i]<='6'){
+      octave = notes[i] - '0';
+      //Serial.println("octave:"+String(octave));
+    }else if(notes[i]==':'){
+      i++;
+      duration = (notes[i] - '0')*125;
+      //Serial.println("duration:"+String(duration));
+    }else if(notes[i]==' '){ // play until we meet a space
+      freq *= pow(2, octave-4);
+      //Serial.println("play:"+String(freq)+", "+String(duration)+", "+String(octave));
+      buzz(freq, duration, duration);
+    }
+  }
+}
+
 
 
 
