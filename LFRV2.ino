@@ -1,4 +1,5 @@
 #include <math.h>
+#include <Wire.h>
 #include "MiniLFRV2.h"
 #include "Timer.h"
 #include "L3G.h"
@@ -198,9 +199,9 @@ void doBuzzer(char * cmd) {
 }
 
 void doDcSpeed(char * cmd) {
-  int idx, speed;
-  sscanf(cmd, "%d %d\n", &idx, &speed);
-  mini.speedSet(idx, speed);
+  int spdl, spdr;
+  sscanf(cmd, "%d %d\n", &spdl, &spdr);
+  mini.speedSet(spdl, spdr);
 }
 
 void setMotorDiff(char *cmd)
@@ -327,6 +328,7 @@ void parseCmd(char * cmd) {
 }
 
 void setup(){
+  Wire.begin();
   Serial.begin(115200);
   mini.init();
   pidTh = timer.every(5, pidWork);
@@ -338,7 +340,7 @@ int8_t bufindex;
 
 void loop(){
   if(mode == IDLE){
-    if(mini.buttonGet(1) == 1){
+    if(mini.buttonGet(1) == 0){
       mini.buzz(500, 200, 500);
       mini.buzz(500, 200, 500);
       mini.buzz(500, 200, 500);

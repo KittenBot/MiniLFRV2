@@ -50,6 +50,9 @@ void MiniLFRV2::init() {
   headRgb.begin();
   headRgb.setPin(EYE_RIGHT);
   loadSetup();
+
+  hoverRgbShow(0,0,0,0);
+  eyeLedSet(0,0);
 }
 
 void MiniLFRV2::loadSetup(){
@@ -94,11 +97,11 @@ void MiniLFRV2::speedSet(int spdL, int spdR) {
     analogWrite(PIN_M1A, 0);
   }
   if(spdR < 0) {
-    analogWrite(PIN_M2B, 0);
-    analogWrite(PIN_M2A, -spdR);
-  }else{
-    analogWrite(PIN_M2B, spdR);
+    analogWrite(PIN_M2B, -spdR);
     analogWrite(PIN_M2A, 0);
+  }else{
+    analogWrite(PIN_M2B, 0);
+    analogWrite(PIN_M2A, spdR);
   }
 }
 
@@ -125,8 +128,8 @@ int MiniLFRV2::buttonGet(int btn)
 void MiniLFRV2::eyeLedSet(int left, int right){
   pinMode(EYE_LEFT, OUTPUT);
   pinMode(EYE_RIGHT, OUTPUT);
-  digitalWrite(EYE_LEFT, left);
-  digitalWrite(EYE_RIGHT, right);
+  digitalWrite(EYE_LEFT, !left);
+  digitalWrite(EYE_RIGHT, !right);
 }
 
 float MiniLFRV2::distance(){
