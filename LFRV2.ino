@@ -330,6 +330,7 @@ void setup(){
   Serial.begin(115200);
   mini.init();
   pidTh = timer.every(5, pidWork);
+  echoVersion();
 }
 
 char buf[64];
@@ -337,7 +338,17 @@ int8_t bufindex;
 
 void loop(){
   if(mode == IDLE){
-    int btn = mini.buttonGet(1);
+    if(mini.buttonGet(1) == 1){
+      mini.buzz(500, 200, 500);
+      mini.buzz(500, 200, 500);
+      mini.buzz(500, 200, 500);
+      if(mini.buttonGet(1) == 1){
+        // todo: go threshold calibrate  
+      }else{
+        mode = LINEFOLLOW;
+      }
+    }
+    int btn2 = mini.buttonGet(1);
   }else if(mode == LINEFOLLOW){
     timer.update();  
   }else if(mode == OBJECTAVOID){

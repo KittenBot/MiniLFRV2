@@ -44,7 +44,7 @@ public:
 	void eyeLedSet(int left, int right);
 	float distance();
 	float batteryVoltage();
-  int infraReceive();
+  uint32_t infraReceive();
   void infraSend(int hex);
 	// music 
 	void buzz(int freq, int duration);
@@ -66,6 +66,7 @@ public:
 	void matrixShowString(uint8_t * str);
 	// Linefollow related
 	void updatePid(float p, float i, float d);
+  void startLineFollow();
 	int pidLoop();
 protected:
   int AD[5] = { A3,A2,A1,A0,A6 };

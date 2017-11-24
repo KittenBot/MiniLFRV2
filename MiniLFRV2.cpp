@@ -10,6 +10,9 @@
 Adafruit_NeoPixel hoverRgb(2);
 Adafruit_NeoPixel headRgb(2);
 Adafruit_8x16minimatrix ledMat = Adafruit_8x16minimatrix();
+
+decode_results irresult;
+uint32_t irdecoded = 0xffffffff;
 IRsend irsend;
 IRrecv irrecv(2);
 
@@ -288,8 +291,34 @@ int MiniLFRV2::pidLoop(){
   
 }
 
+void MiniLFRV2::startLineFollow(){
+  outlineCnt = 0;
+  erroInte = errorLast = error = 0;
+}
 
+void MiniLFRV2::loop(){
+  if (irrecv.decode(&irresult))
+  {
+    if (irresult.value != 0xFFFFFFFF)
+    {
+      irdecoded = irresult.value;
+    }
+    irrecv.resume(); // Receive the next value
+  }
+}
 
+void MiniLFRV2::infraSend(int hex){
+  irsend.sendNEC(hex, 32);
+  delay(5);
+  irrecv.enableIRIn();
+}
+
+uint32_t MiniLFRV2::infraReceive(){
+  uint32_t ret;
+  ret = irdecoded;
+  irdecoded = -1;   
+  return ret;
+}
 
 
 
