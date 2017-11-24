@@ -88,7 +88,12 @@ void gyroCalibrate() {
 
 
 void pidWork() {
-  mini.pidLoop();
+  int ret = mini.pidLoop();
+  if(ret == -1){
+    mini.buzz(200,100,300);
+    mini.buzz(200,100,100);
+    mode = IDLE;  
+  }
 }
 
 void echoVersion() {
@@ -357,9 +362,10 @@ void loop(){
       mini.buzz(500, 200, 500);
       mini.buzz(500, 200, 500);
       mini.buzz(500, 200, 500);
-      if(mini.buttonGet(1) == 1){
+      if(mini.buttonGet(1) == 0){
         // todo: go threshold calibrate  
       }else{
+        mini.startLineFollow();
         mode = LINEFOLLOW;
       }
     }

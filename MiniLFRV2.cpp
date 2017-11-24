@@ -282,7 +282,7 @@ int MiniLFRV2::pidLoop(){
     float ff = 150; //150
     float ctrl = -calcPid(bias);
     spdL = ff + ctrl;
-    spdR = -(ff - ctrl);
+    spdR = (ff - ctrl);
     speedSet(spdL, spdR);
     return 0;
   }
@@ -322,8 +322,9 @@ uint32_t MiniLFRV2::infraReceive(){
 const int noteMap[] = {440, 494, 262, 294, 330, 349, 392};
 
 void MiniLFRV2::playNote(int note, int clap){
-  int freq = 440.0f*pow(2, (note-69)/12);
+  int freq = 440.0f*pow(2, float(note-69)/12);
   int duration = clap * 125;
+  //Serial.println("freq "+String(freq));
   buzz(freq, duration, duration);
 }
 
