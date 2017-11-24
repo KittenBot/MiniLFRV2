@@ -1,7 +1,8 @@
+#include <Arduino.h>
+#include <math.h>
 #include "EEPROM.h"
-#include "Adafruit_NeoPixel.h"
-#include "Adafruit_GFX.h"
 #include "Adafruit_LEDBackpackSw.h"
+#include "Adafruit_NeoPixel.h"
 #include "MiniLFRV2.h"
 #include "IRremote.h"
 
@@ -105,13 +106,13 @@ void MiniLFRV2::speedSet(int spdL, int spdR) {
   }
 }
 
-void MiniLFRV2::speedSet(int spdl, int spdr, int t) {
-  speedSet(spdl, spdr);
-  delay(t);
+void MiniLFRV2::speedSet(int spdL, int spdR, int duration){
+  speedSet(spdL, spdR);
+  delay(duration);
   speedSet(0,0);
 }
 
-void MiniLFRV2::stop(){
+void MiniLFRV2::stopMotor(){
   speedSet(0,0);
 }
 
@@ -276,7 +277,7 @@ int MiniLFRV2::pidLoop(){
       break;
   }
   if (outlineCnt > 100) {
-    stop();
+    speedSet(0,0);
     return -1;
   }else{
     float ff = 150; //150

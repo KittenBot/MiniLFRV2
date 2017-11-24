@@ -34,8 +34,8 @@ public:
 	void loop();
 	// motor related
 	void speedSet(int spdl, int spdr);
-	void speedSet(int spdl, int spdr, int t);
-	void stop();
+  void speedSet(int spdl, int spdr, int duration);
+	void stopMotor();
 	void motorDiffSet(float diff);
 	float motorDiffGet();
 	// peripheral

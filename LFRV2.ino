@@ -1,4 +1,3 @@
-#include <math.h>
 #include <Wire.h>
 #include "MiniLFRV2.h"
 #include "Timer.h"
@@ -6,9 +5,9 @@
 
 #define FIRMWARE "Linefollow V3.0\r\n"
 
-const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
-const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
-const char wedding[] = "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
+//const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
+//const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
+//const char wedding[] = "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
 
 enum mode {
   IDLE,
@@ -34,7 +33,7 @@ void gyroCalibrate() {
   long lastmillis;
   // 1. stop and init gyro
   //  delay(5000);
-  mini.stop();
+  mini.stopMotor();
   if (!gyro.init()) {
     Serial.println("Gyro Init Fail");
     return;
@@ -48,8 +47,8 @@ void gyroCalibrate() {
   }
   // 3. output initial values
   gzStill = gz;
-  Serial.print("Dc Diff: "); Serial.println(mini.motorDiffGet());
-  Serial.print("Init Gz: "); Serial.println(gzStill);
+  //Serial.print("Dc Diff: "); Serial.println(mini.motorDiffGet());
+  //Serial.print("Init Gz: "); Serial.println(gzStill);
   lastmillis = millis();
   mini.motorDiffSet(1.0);;
   diffInte = 0;
@@ -73,13 +72,13 @@ void gyroCalibrate() {
         if (filteredCount == 6) {
           mini.motorDiffSet(1.0 + diffInte);
           mini.syncSetup();
-          mini.stop();
+          mini.stopMotor();
           Serial.println("M300");
           return;
         }
       }
-      Serial.print(" Z: "); Serial.print(diff);
-      Serial.print(" D: "); Serial.println(mini.motorDiffGet());
+      //Serial.print(" Z: "); Serial.print(diff);
+      //Serial.print(" D: "); Serial.println(mini.motorDiffGet());
       mini.motorDiffSet(1.0 + diffInte);
       mini.speedSet(120,120);
     }
@@ -353,6 +352,18 @@ void setup(){
   echoVersion();
 }
 
+void avoidLoop(){
+  float temp = mini.distance();
+  if (temp < 10){
+    mini.stopMotor();
+    delay(20);
+    mini.speedSet(-100, -100, 200);
+  }else{
+    mini.speedSet(random(50,150), random(50,150));
+  }
+  delay(20);
+}
+
 char buf[64];
 int8_t bufindex;
 
@@ -373,7 +384,10 @@ void loop(){
   }else if(mode == LINEFOLLOW){
     timer.update();  
   }else if(mode == OBJECTAVOID){
-    
+    if(mini.buttonGet(1) == 0){
+      mode = IDLE;  
+    }
+    avoidLoop();
   }else{
     mini.loop();  
   }
