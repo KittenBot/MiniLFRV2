@@ -5,9 +5,14 @@
 
 #define FIRMWARE "Linefollow V3.0\r\n"
 
-//const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
-//const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
-//const char wedding[] = "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
+const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
+const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
+const char wedding[] = "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
+const char powerup[] = "g4:1 c5 e g:2 e:1 g:3 ";
+const char powerdown[] = "g5:1 d c g4:2 b:1 c5:3 ";
+const char bdding[] = "b5:1 e6:3 ";
+const char baddy[] = "c3:3 r d:2 d r c r f:8 ";
+
 
 enum mode {
   IDLE,
@@ -89,8 +94,7 @@ void gyroCalibrate() {
 void pidWork() {
   int ret = mini.pidLoop();
   if(ret == -1){
-    mini.buzz(200,100,300);
-    mini.buzz(200,100,100);
+    mini.playMusic(powerdown);
     mode = IDLE;  
   }
 }
@@ -370,9 +374,7 @@ int8_t bufindex;
 void loop(){
   if(mode == IDLE){
     if(mini.buttonGet(1) == 0){
-      mini.buzz(500, 200, 500);
-      mini.buzz(500, 200, 500);
-      mini.buzz(500, 200, 500);
+      mini.playMusic(powerup);
       if(mini.buttonGet(1) == 0){
         // todo: go threshold calibrate  
       }else{
@@ -380,14 +382,19 @@ void loop(){
         mode = LINEFOLLOW;
       }
     }
-    int btn2 = mini.buttonGet(1);
+    if(mini.buttonGet(2) == 0){
+      mini.playMusic(bdding);
+      mode = OBJECTAVOID;
+    }
   }else if(mode == LINEFOLLOW){
     timer.update();  
   }else if(mode == OBJECTAVOID){
-    if(mini.buttonGet(1) == 0){
-      mode = IDLE;  
-    }
     avoidLoop();
+    if(mini.buttonGet(2) == 0){
+      mode = IDLE;
+      mini.playMusic(baddy);
+      mini.stopMotor();
+    }
   }else{
     mini.loop();  
   }

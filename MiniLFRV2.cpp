@@ -338,6 +338,8 @@ void MiniLFRV2::playMusic(const char * notes){
     if(notes[i]>='a' && notes[i]<='g'){
       freq = noteMap[notes[i]-'a'];
       //Serial.println("freq:"+String(freq));
+    }else if(notes[i]=='r'){
+      freq = 0;
     }else if(notes[i]>='2' && notes[i]<='6'){
       octave = notes[i] - '0';
       //Serial.println("octave:"+String(octave));
