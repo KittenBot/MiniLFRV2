@@ -19,7 +19,7 @@ class MiniLFRV2
 private:
 	float error, errorLast, erroInte;
   int outlineCnt;
-  int getTrace();
+  float getTrace();
   float calcPid(float input);
    
 public:

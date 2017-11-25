@@ -203,6 +203,19 @@ int MiniLFRV2::getSensorThreshold(int index){
   return robotSetup.data.irThreshold[index];
 }
 
+void MiniLFRV2::setSensorMax(int index, int value){
+  robotSetup.data.irMax[index] = value;  
+}
+int MiniLFRV2::getSensorMax(int index){
+  return robotSetup.data.irMax[index];
+}
+void MiniLFRV2::setSensorMin(int index, int value){
+  robotSetup.data.irMin[index] = value;  
+}
+int MiniLFRV2::getSensorMin(int index){
+  return robotSetup.data.irMin[index];
+}
+
 void MiniLFRV2::matrixShow(uint8_t * data){
   ledMat.begin(0x70);
   ledMat.clear();
@@ -232,13 +245,29 @@ void MiniLFRV2::updatePid(float p, float i, float d){
   Kd = d;
 }
 
-int MiniLFRV2::getTrace(){
-  int ret = 0;
+float MiniLFRV2::getTrace(){
+  float tr[5];
   for (int i = 0; i < 5; i++) {
     adval[i] = analogRead(AD[i]);
-    if (adval[i] < robotSetup.data.irThreshold[i]) ret += (0x1 << i);
+    //if (adval[i] < robotSetup.data.irThreshold[i]) ret += (0x1 << i);
+    int admap = map(adval[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
+    int th = map( robotSetup.data.irThreshold[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
+    tr[i] = max(float(th-admap)*1.8/th, 0); // ignore less than zero values
+    Serial.print(String(tr[i])+", ");
   }
-  return ret;  
+  float errLeft = tr[0]*2+tr[1];
+  float errRight = tr[4]*2+tr[3];
+  float errDelta = errLeft - errRight;
+  Serial.println(String(errLeft)+":"+String(errRight)+"="+String(errRight-errLeft));
+  if(errRight<0.3 && errLeft<0.3 && tr[2]<0.3){
+    outlineCnt++;
+  }else if(errRight>2 && errLeft>2){
+    outlineCnt++;
+  }else{
+    outlineCnt=0;  
+  }
+  
+  return errDelta;
 }
 
 float MiniLFRV2::calcPid(float input) {
@@ -257,8 +286,8 @@ float MiniLFRV2::calcPid(float input) {
 
 int MiniLFRV2::pidLoop(){
   int spdL, spdR;
-  int bias;
-  int pos = getTrace();
+  float bias = getTrace();
+  /*
   switch (pos) {
     case B00000:
       outlineCnt++;
@@ -294,6 +323,7 @@ int MiniLFRV2::pidLoop(){
       outlineCnt++;
       break;
   }
+  */
   if (outlineCnt > 100) {
     speedSet(0,0);
     return -1;
@@ -305,6 +335,7 @@ int MiniLFRV2::pidLoop(){
     speedSet(spdL, spdR);
     return 0;
   }
+  
   
 }
 

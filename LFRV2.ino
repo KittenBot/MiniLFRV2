@@ -116,6 +116,8 @@ void sensorCalibration(){
     threshold[i] = (adcMax[i] - adcMin[i])*0.3+adcMin[i];
     Serial.println("V:"+String(i)+":"+String(adcMin[i])+" "+String(adcMax[i])+": "+String(threshold[i]));   
     mini.setSensorThreshold(i, threshold[i]);
+    mini.setSensorMax(i, adcMax[i]);
+    mini.setSensorMin(i, adcMin[i]);
   }
   mini.syncSetup();
 }
