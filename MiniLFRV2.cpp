@@ -253,12 +253,12 @@ float MiniLFRV2::getTrace(){
     int admap = map(adval[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
     int th = map( robotSetup.data.irThreshold[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
     tr[i] = max(float(th-admap)*1.8/th, 0); // ignore less than zero values
-    Serial.print(String(tr[i])+", ");
+    //Serial.print(String(tr[i])+", ");
   }
   float errLeft = tr[0]*2+tr[1];
   float errRight = tr[4]*2+tr[3];
   float errDelta = errLeft - errRight;
-  Serial.println(String(errLeft)+":"+String(errRight)+"="+String(errRight-errLeft));
+  //Serial.println(String(errLeft)+":"+String(errRight)+"="+String(errRight-errLeft));
   if(errRight<0.3 && errLeft<0.3 && tr[2]<0.3){
     outlineCnt++;
   }else if(errRight>2 && errLeft>2){
@@ -359,6 +359,16 @@ void MiniLFRV2::infraSend(int hex){
   irsend.sendNEC(hex, 32);
   delay(5);
   irrecv.enableIRIn();
+}
+
+void MiniLFRV2::extIo(int d12, int d10, int t){
+  pinMode(12, OUTPUT);
+  pinMode(10, OUTPUT);
+  digitalWrite(12, d12);
+  digitalWrite(10, d10);
+  delay(t);
+  digitalWrite(12, 1);
+  digitalWrite(10, 1);
 }
 
 uint32_t MiniLFRV2::infraReceive(){

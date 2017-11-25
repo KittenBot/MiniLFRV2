@@ -45,6 +45,7 @@ public:
 	float batteryVoltage();
   uint32_t infraReceive();
   void infraSend(int hex);
+  void extIo(int d12, int d10, int t);
 	// music 
 	void buzz(int freq, int duration);
 	void buzz(int freq, int duration, int delayms);

@@ -288,6 +288,12 @@ void doMatrixString(char * cmd){
   mini.matrixShowString(cmd);  
 }
 
+void doExtIO(char * cmd){
+  int d12, d10, t;
+  sscanf(cmd, "%d %d %d\n", &d12, &d10, &t);
+  mini.extIo(d12, d10 ,t);
+}
+
 void parseCode(char * cmd) {
   int code;
   char * tmp;
@@ -353,6 +359,9 @@ void parseCode(char * cmd) {
       break;
     case 20:
       doMatrixString(tmp);
+      break;
+    case 30:
+      doExtIO(tmp);
       break;
     case 200:
       doDcSpeed(tmp);
