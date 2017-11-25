@@ -13,7 +13,6 @@ const char powerdown[] = "g5:1 d c g4:2 b:1 c5:3 ";
 const char bdding[] = "b5:1 e6:3 ";
 const char baddy[] = "c3:3 r d:2 d r c r f:8 ";
 
-
 enum mode {
   IDLE,
   CODING,
@@ -88,6 +87,37 @@ void gyroCalibrate() {
       mini.speedSet(120,120);
     }
   }
+}
+
+void sensorCalibration(){
+  int adcMin[5] = {999,999,999,999,999};
+  int adcMax[5] = {0,0,0,0,0};
+  int threshold[5];
+
+  // trun left
+  int movecount = 0;
+  while(movecount<480){
+    if(movecount == 0){ mini.speedSet(-55, 55);}
+    else if(movecount == 120){ mini.speedSet(55, -55);}
+    else if(movecount == 360){ mini.speedSet(-55, 55);}
+    for(int i=0;i<5;i++){
+      int s = mini.getSensor(i);
+      if(s<adcMin[i]){
+        adcMin[i] = adcMin[i]*0.7 + s*0.3;
+      }else if(s>adcMax[i]){
+        adcMax[i] = adcMax[i]*0.7 + s*0.3;
+      }
+    }
+    movecount++;
+    delay(5);
+  }
+  mini.speedSet(0, 0);
+  for(int i=0;i<5;i++){
+    threshold[i] = (adcMax[i] - adcMin[i])*0.3+adcMin[i];
+    Serial.println("V:"+String(i)+":"+String(adcMin[i])+" "+String(adcMax[i])+": "+String(threshold[i]));   
+    mini.setSensorThreshold(i, threshold[i]);
+  }
+  mini.syncSetup();
 }
 
 
@@ -252,6 +282,10 @@ void setThresholdAll(char * cmd)
   }
 }
 
+void doMatrixString(char * cmd){
+  mini.matrixShowString(cmd);  
+}
+
 void parseCode(char * cmd) {
   int code;
   char * tmp;
@@ -315,6 +349,9 @@ void parseCode(char * cmd) {
     case 19: // play note
       doNote(tmp);
       break;
+    case 20:
+      doMatrixString(tmp);
+      break;
     case 200:
       doDcSpeed(tmp);
       break;
@@ -332,6 +369,9 @@ void parseCode(char * cmd) {
       break;
     case 300:
       gyroCalibrate();
+      break;
+    case 310:
+      sensorCalibration();
       break;
     case 999:
       asm volatile ("  jmp 0");
@@ -376,7 +416,9 @@ void loop(){
     if(mini.buttonGet(1) == 0){
       mini.playMusic(powerup);
       if(mini.buttonGet(1) == 0){
-        // todo: go threshold calibrate  
+        mini.buzz(1000, 200, 300);
+        mini.buzz(1000, 200, 300);
+        sensorCalibration();
       }else{
         mini.startLineFollow();
         mode = LINEFOLLOW;

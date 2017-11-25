@@ -58,10 +58,13 @@ public:
 	int getSensor(int index);
 	void setSensorThreshold(int index, int value);
 	int getSensorThreshold(int index);
+  void setSensorMax(int index, int value);
+  int getSensorMax(int index);
+  void setSensorMin(int index, int value);
+  int getSensorMin(int index);
 	// LED matrix
 	void matrixShow(uint8_t * data);
-	void matrixShowTime(int hour, int minute);
-	void matrixShowString(uint8_t * str);
+	void matrixShowString(const char * str);
 	// Linefollow related
 	void updatePid(float p, float i, float d);
   void startLineFollow();

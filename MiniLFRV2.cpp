@@ -6,7 +6,7 @@
 #include "MiniLFRV2.h"
 #include "IRremote.h"
 
-#define SETUPLEN 32
+#define SETUPLEN 48
 
 Adafruit_NeoPixel hoverRgb(2);
 Adafruit_NeoPixel headRgb(2);
@@ -25,6 +25,8 @@ static union {
     unsigned int sign;
     float dcdiff;
     unsigned int irThreshold[5];
+    unsigned int irMax[5];
+    unsigned int irMin[5];
   } data;
   char buf[SETUPLEN];
 } robotSetup;
@@ -51,7 +53,6 @@ void MiniLFRV2::init() {
   headRgb.begin();
   headRgb.setPin(EYE_RIGHT);
   loadSetup();
-  ledMat.begin(0x70);
   hoverRgbShow(0,0,0,0);
   eyeLedSet(0,0);
 }
@@ -203,9 +204,26 @@ int MiniLFRV2::getSensorThreshold(int index){
 }
 
 void MiniLFRV2::matrixShow(uint8_t * data){
+  ledMat.begin(0x70);
   ledMat.clear();
   ledMat.drawBitmap(0, 0, data, 8, 8, LED_ON);
   ledMat.writeDisplay();
+}
+
+void MiniLFRV2::matrixShowString(const char * str){
+  ledMat.begin(0x70);
+  ledMat.setTextSize(0);
+  ledMat.setTextWrap(false);  // we dont want text to wrap so it scrolls nicely
+  ledMat.setTextColor(LED_ON);
+  int offset = -(strlen(str)-1)*4;
+  for (int x=0; x>=offset; x--) {
+    Serial.println(x);
+    ledMat.clear();
+    ledMat.setCursor(x,0);
+    ledMat.print(str);
+    ledMat.writeDisplay();
+    delay(100);
+  }
 }
 
 void MiniLFRV2::updatePid(float p, float i, float d){
