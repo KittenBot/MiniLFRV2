@@ -50,8 +50,10 @@ void MiniLFRV2::init() {
   // rgb
   hoverRgb.begin();
   hoverRgb.setPin(PIN_RGB);
+  hoverRgb.setBrightness(100);
   headRgb.begin();
   headRgb.setPin(EYE_RIGHT);
+  headRgb.setBrightness(100);
   loadSetup();
   hoverRgbShow(0,0,0,0);
   spotlightSet(0,0);
