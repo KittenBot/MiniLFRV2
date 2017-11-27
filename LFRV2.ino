@@ -186,10 +186,10 @@ void doSetThreshold(char * cmd) {
   mini.syncSetup();
 }
 
-void doEye(char * cmd) {
+void doSpotlight(char * cmd) {
   int left, right;
   sscanf(cmd, "%d %d\n", &left, &right);
-  mini.eyeLedSet(left, right);
+  mini.spotlightSet(left, right);
 }
 
 void doDistance() {
@@ -351,7 +351,7 @@ void parseCode(char * cmd) {
       break;
     // peripherals control
     case 6: // front eye command
-      doEye(tmp);
+      doSpotlight(tmp);
       break;
     case 7: // ultrasonci sensor
       doDistance();

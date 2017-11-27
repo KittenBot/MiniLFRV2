@@ -127,7 +127,7 @@ int MiniLFRV2::buttonGet(int btn)
   return -1;
 }
 
-void MiniLFRV2::eyeLedSet(int left, int right){
+void MiniLFRV2::spotlightSet(int left, int right){
   pinMode(EYE_LEFT, OUTPUT);
   pinMode(EYE_RIGHT, OUTPUT);
   digitalWrite(EYE_LEFT, !left);

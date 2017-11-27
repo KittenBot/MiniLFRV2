@@ -40,7 +40,7 @@ public:
 	float motorDiffGet();
 	// peripheral
 	int buttonGet(int btn);
-	void eyeLedSet(int left, int right);
+	void spotlightSet(int left, int right);
 	float distance();
 	float batteryVoltage();
   uint32_t infraReceive();
