@@ -219,7 +219,7 @@ int MiniLFRV2::getSensorMin(int index){
 void MiniLFRV2::matrixShow(uint8_t * data){
   ledMat.begin(0x70);
   ledMat.clear();
-  ledMat.drawBitmap(0, 0, data, 8, 8, LED_ON);
+  ledMat.drawBitmap(0, 0, data, 16, 8, LED_ON);
   ledMat.writeDisplay();
 }
 
@@ -230,7 +230,6 @@ void MiniLFRV2::matrixShowString(const char * str){
   ledMat.setTextColor(LED_ON);
   int offset = -(strlen(str)-1)*4;
   for (int x=0; x>=offset; x--) {
-    Serial.println(x);
     ledMat.clear();
     ledMat.setCursor(x,0);
     ledMat.print(str);

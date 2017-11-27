@@ -207,11 +207,11 @@ void doBattery() {
 }
 
 void doButton1() {
-  Serial.print("M9 "); Serial.println(mini.buttonGet(1));
+  Serial.print("M9 "); Serial.println(!mini.buttonGet(1));
 }
 
 void doButton2() {
-  Serial.print("M10 "); Serial.println(mini.buttonGet(2));
+  Serial.print("M10 "); Serial.println(!mini.buttonGet(2));
 }
 
 void doInfraRead(){
@@ -237,6 +237,10 @@ void doFrontRGB(char * cmd) {
   mini.headRgbShow(pix, r, g, b);
 }
 
+void doMusic(char * cmd){
+    mini.playMusic(cmd);
+}
+
 void doBuzzer(char * cmd) {
   int freq, t;
   sscanf(cmd, "%d %d\n", &freq, &t);
@@ -259,6 +263,7 @@ void doDcSpeedWait(char * cmd){
   int spdl, spdr, t;
   sscanf(cmd, "%d %d %d\n", &spdl, &spdr, &t);
   mini.speedSet(spdl, spdr, t);
+  Serial.println("M202");
 }
 
 void setMotorDiff(char *cmd)
@@ -293,6 +298,23 @@ void setThresholdAll(char * cmd)
 
 void doMatrixString(char * cmd){
   mini.matrixShowString(cmd);  
+}
+
+void doMatrixShow(char * cmd){
+  uint16_t mat[8];
+  char * tmp = "0000";
+  int index = 0;
+  for(int i=0;i<32;i+=4){
+    tmp[0] = cmd[i];
+    tmp[1] = cmd[i+1];
+    tmp[2] = cmd[i+2];
+    tmp[3] = cmd[i+3];
+    mat[index] = strtol(tmp, NULL, 16);
+    //Serial.print(String(mat[index], 16)+" ");
+    index++;
+  }
+  //Serial.println("M21");
+  mini.matrixShow((uint8_t *)mat);
 }
 
 void doExtIO(char * cmd){
@@ -358,6 +380,9 @@ void parseCode(char * cmd) {
     case 16: // front rgb
       doFrontRGB(tmp);
       break;
+    case 17: // music
+      doMusic(tmp);
+      break;
     case 18: // buzzer
       doBuzzer(tmp);
       break;
@@ -366,6 +391,9 @@ void parseCode(char * cmd) {
       break;
     case 20:
       doMatrixString(tmp);
+      break;
+    case 21:
+      doMatrixShow(tmp);
       break;
     case 30:
       doExtIO(tmp);
