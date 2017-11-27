@@ -54,7 +54,7 @@ void MiniLFRV2::init() {
   headRgb.setPin(EYE_RIGHT);
   loadSetup();
   hoverRgbShow(0,0,0,0);
-  eyeLedSet(0,0);
+  spotlightSet(0,0);
 }
 
 void MiniLFRV2::loadSetup(){
@@ -306,6 +306,7 @@ void MiniLFRV2::loop(){
     if (irresult.value != 0xFFFFFFFF)
     {
       irdecoded = irresult.value;
+      Serial.println("TRIG 1 "+String(irdecoded, HEX));
     }
     irrecv.resume(); // Receive the next value
   }
@@ -329,6 +330,7 @@ void MiniLFRV2::extIo(int d12, int d10, int t){
 
 uint32_t MiniLFRV2::infraReceive(){
   uint32_t ret;
+  irrecv.enableIRIn();
   ret = irdecoded;
   irdecoded = -1;   
   return ret;

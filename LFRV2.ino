@@ -477,6 +477,7 @@ void loop(){
       mini.playMusic(bdding);
       mode = OBJECTAVOID;
     }
+    mini.loop();
   }else if(mode == LINEFOLLOW){
     timer.update();  
   }else if(mode == OBJECTAVOID){
