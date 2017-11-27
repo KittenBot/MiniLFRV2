@@ -249,16 +249,13 @@ float MiniLFRV2::getTrace(){
   float tr[5];
   for (int i = 0; i < 5; i++) {
     adval[i] = analogRead(AD[i]);
-    //if (adval[i] < robotSetup.data.irThreshold[i]) ret += (0x1 << i);
     int admap = map(adval[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
     int th = map( robotSetup.data.irThreshold[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
     tr[i] = max(float(th-admap)*1.8/th, 0); // ignore less than zero values
-    //Serial.print(String(tr[i])+", ");
   }
   float errLeft = tr[0]*2+tr[1];
   float errRight = tr[4]*2+tr[3];
   float errDelta = errLeft - errRight;
-  //Serial.println(String(errLeft)+":"+String(errRight)+"="+String(errRight-errLeft));
   if(errRight<0.3 && errLeft<0.3 && tr[2]<0.3){
     outlineCnt++;
   }else if(errRight>2 && errLeft>2){
@@ -274,7 +271,6 @@ float MiniLFRV2::calcPid(float input) {
   float errorDiff;
   float output;
   error = error * 0.7 + input * 0.3; // filter
-                     //error = input;
   errorDiff = error - errorLast;
   erroInte = constrain(erroInte + error, -50, 50);
   output = Kp * error + Ki * erroInte + Kd * errorDiff;
@@ -287,43 +283,6 @@ float MiniLFRV2::calcPid(float input) {
 int MiniLFRV2::pidLoop(){
   int spdL, spdR;
   float bias = getTrace();
-  /*
-  switch (pos) {
-    case B00000:
-      outlineCnt++;
-      break;
-    case B11111:
-      outlineCnt++;
-      break;
-    case B00010:
-    case B00110:
-      outlineCnt = 0;
-      bias = 1;
-      break;
-    case B00001:
-    case B00011:
-      outlineCnt = 0;
-      bias = 2;
-      break;
-    case B00100:
-      outlineCnt = 0;
-      bias = 0;
-      break;
-    case B01000:
-    case B01100:
-      outlineCnt = 0;
-      bias = -1;
-      break;
-    case B10000:
-    case B11000:
-      outlineCnt = 0;
-      bias = -2;
-      break;
-    default:
-      outlineCnt++;
-      break;
-  }
-  */
   if (outlineCnt > 100) {
     speedSet(0,0);
     return -1;
@@ -335,8 +294,6 @@ int MiniLFRV2::pidLoop(){
     speedSet(spdL, spdR);
     return 0;
   }
-  
-  
 }
 
 void MiniLFRV2::startLineFollow(){

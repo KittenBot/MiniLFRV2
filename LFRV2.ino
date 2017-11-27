@@ -139,8 +139,9 @@ void echoVersion() {
 void doGetSensor(char * cmd) {
   int idx;
   sscanf(cmd, "%d\n", &idx);
+  int s = map(mini.getSensor(idx),mini.getSensorMin(idx),mini.getSensorMax(idx),0,1000);
   Serial.print("M1 "); Serial.print(idx);
-  Serial.print(" "); Serial.println(mini.getSensor(idx));
+  Serial.print(" "); Serial.println(s);
 }
 
 void doGetPid() {
@@ -252,6 +253,12 @@ void doDcSpeed(char * cmd) {
   int spdl, spdr;
   sscanf(cmd, "%d %d\n", &spdl, &spdr);
   mini.speedSet(spdl, spdr);
+}
+
+void doDcSpeedWait(char * cmd){
+  int spdl, spdr, t;
+  sscanf(cmd, "%d %d %d\n", &spdl, &spdr, &t);
+  mini.speedSet(spdl, spdr, t);
 }
 
 void setMotorDiff(char *cmd)
@@ -366,6 +373,9 @@ void parseCode(char * cmd) {
     case 200:
       doDcSpeed(tmp);
       break;
+    case 202:
+      doDcSpeedWait(tmp);
+      break;      
     case 209:
       setMotorDiff(tmp);
       break;
