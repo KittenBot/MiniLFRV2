@@ -237,6 +237,12 @@ void doFrontRGB(char * cmd) {
   mini.headRgbShow(pix, r, g, b);
 }
 
+void doRGBBrightness(char * cmd){
+  int brightness;
+  sscanf(cmd, "%d\n", &brightness);
+  mini.setRgbBrightness(brightness);
+}
+
 void doMusic(char * cmd){
     mini.playMusic(cmd);
 }
@@ -373,6 +379,9 @@ void parseCode(char * cmd) {
       break;
     case 13: // hover light
       doHoverLight(tmp);
+      break;
+    case 14:
+      doRGBBrightness(tmp);
       break;
     case 15: // lcd
       //doLCD(tmp);
