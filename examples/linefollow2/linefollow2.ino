@@ -1,53 +1,31 @@
-#include <math.h>
 #include <Wire.h>
-#include <EEPROM.h>
-#include <IRremote.h>
-#include <LiquidCrystal_I2C.h>
-
-#include <TM1637Display.h>
-#include <L3G.h>
-#include "LedControl.h"
-#include "Timer.h"
 #include "MiniLFRV2.h"
+#include "Timer.h"
+#include "L3G.h"
 
-#define FIRMWARE "Linefollow V2.7\r\n"
-#define SETUPLEN 32
+#define FIRMWARE "Linefollow V3.0\r\n"
 
-LiquidCrystal_I2C lcd(0x20, 16, 2); // set the LCD address to 0x20 for a 16 chars and 2 line display
+const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
+const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
+const char wedding[] = "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
+const char powerup[] = "g4:1 c5 e g:2 e:1 g:3 ";
+const char powerdown[] = "g5:1 d c g4:2 b:1 c5:3 ";
+const char bdding[] = "b5:1 e6:3 ";
+const char baddy[] = "c3:3 r d:2 d r c r f:8 ";
+
+enum mode {
+  IDLE,
+  CODING,
+  LINEFOLLOW,
+  OBJECTAVOID
+};
+
+int pidTh;
+int mode = IDLE;
+Timer timer;
+MiniLFRV2 mini;
 L3G gyro; // gyro for calibrate forward movement
 
-Timer timer;
-IRsend irsend;
-IRrecv irrecv(2);
-MiniLFRV2 mini;
-
-/*用于dc马达校准同步*/
-static union {
-  struct {
-    unsigned int sign;//标致 读EEPROM
-    float dcdiff;
-    unsigned int irThreshold[5];
-  } data;             //共用体结构体
-  char buf[SETUPLEN];
-} robotSetup;
-
-decode_results results;  //红外解码 返回结果
-uint32_t irdecoded = 0xffffffff;
-/*读取五路寻迹传感器数值换算成二进制字符串形式*/
-int echoTrace() {
-  int ret;
-  ret = mini.echoTrace();
-  return ret;
-}
-/*PID*/
-void pidWork() {
-  mini.pidWork((robotSetup.data.dcdiff));
-}
-/*返回版本号*/
-void echoVersion() {
-  Serial.print("M0 ");
-  Serial.print(FIRMWARE);
-}
 
 void gyroCalibrate() {
   int cnt = 0;
@@ -59,7 +37,7 @@ void gyroCalibrate() {
   long lastmillis;
   // 1. stop and init gyro
   //  delay(5000);
-  mini.doCarMove(0, 0, robotSetup.data.dcdiff);
+  mini.stopMotor();
   if (!gyro.init()) {
     Serial.println("Gyro Init Fail");
     return;
@@ -73,12 +51,12 @@ void gyroCalibrate() {
   }
   // 3. output initial values
   gzStill = gz;
-  Serial.print("Dc Diff: "); Serial.println(robotSetup.data.dcdiff);
-  Serial.print("Init Gz: "); Serial.println(gzStill);
+  //Serial.print("Dc Diff: "); Serial.println(mini.motorDiffGet());
+  //Serial.print("Init Gz: "); Serial.println(gzStill);
   lastmillis = millis();
-  robotSetup.data.dcdiff = 1.0;
+  mini.motorDiffSet(1.0);;
   diffInte = 0;
-  mini.doCarMove(120, 0, robotSetup.data.dcdiff);
+  mini.speedSet(120,120);
   // 4. start auto calibrate
   while (1) {
     gyro.read();
@@ -96,40 +74,83 @@ void gyroCalibrate() {
       } else {
         filteredCount++;
         if (filteredCount == 6) {
-          robotSetup.data.dcdiff = 1.0 + diffInte;
-          syncRobotSetup();
-          mini.updateMotorSpeed(0, 0);
+          mini.motorDiffSet(1.0 + diffInte);
+          mini.syncSetup();
+          mini.stopMotor();
           Serial.println("M300");
           return;
         }
       }
-      Serial.print(" Z: "); Serial.print(diff);
-      Serial.print(" D: "); Serial.println(robotSetup.data.dcdiff);
-      robotSetup.data.dcdiff = 1.0 + diffInte;
-      mini.doCarMove(120, 0, robotSetup.data.dcdiff);
+      //Serial.print(" Z: "); Serial.print(diff);
+      //Serial.print(" D: "); Serial.println(mini.motorDiffGet());
+      mini.motorDiffSet(1.0 + diffInte);
+      mini.speedSet(120,120);
     }
-
-    mini.updateMotorSpeed();
   }
 }
 
-/*获取每一位传感器数值*/
+void sensorCalibration(){
+  int adcMin[5] = {999,999,999,999,999};
+  int adcMax[5] = {0,0,0,0,0};
+  int threshold[5];
+
+  // trun left
+  int movecount = 0;
+  while(movecount<480){
+    if(movecount == 0){ mini.speedSet(-55, 55);}
+    else if(movecount == 120){ mini.speedSet(55, -55);}
+    else if(movecount == 360){ mini.speedSet(-55, 55);}
+    for(int i=0;i<5;i++){
+      int s = mini.getSensor(i);
+      if(s<adcMin[i]){
+        adcMin[i] = adcMin[i]*0.7 + s*0.3;
+      }else if(s>adcMax[i]){
+        adcMax[i] = adcMax[i]*0.7 + s*0.3;
+      }
+    }
+    movecount++;
+    delay(5);
+  }
+  mini.speedSet(0, 0);
+  for(int i=0;i<5;i++){
+    threshold[i] = (adcMax[i] - adcMin[i])*0.3+adcMin[i];
+    Serial.println("V:"+String(i)+":"+String(adcMin[i])+" "+String(adcMax[i])+": "+String(threshold[i]));   
+    mini.setSensorThreshold(i, threshold[i]);
+    mini.setSensorMax(i, adcMax[i]);
+    mini.setSensorMin(i, adcMin[i]);
+  }
+  mini.syncSetup();
+}
+
+
+void pidWork() {
+  int ret = mini.pidLoop();
+  if(ret == -1){
+    mini.playMusic(powerdown);
+    mode = IDLE;  
+  }
+}
+
+void echoVersion() {
+  Serial.print("M0 ");
+  Serial.print(FIRMWARE);
+}
+
 void doGetSensor(char * cmd) {
   int idx;
   sscanf(cmd, "%d\n", &idx);
+  int s = map(mini.getSensor(idx),mini.getSensorMin(idx),mini.getSensorMax(idx),0,1000);
   Serial.print("M1 "); Serial.print(idx);
-  Serial.print(" "); Serial.println(mini.GetSensor(idx));
+  Serial.print(" "); Serial.println(s);
 }
-/*设置PID默认值*/
+
 void doGetPid() {
-  float Kp, Ki, Kd;
-  mini.PidValue(&Kp, &Ki, &Kd);
   Serial.print("M2 ");
-  Serial.print(Kp); Serial.print(" ");
-  Serial.print(Ki); Serial.print(" ");
-  Serial.println(Kd);
+  Serial.print(mini.Kp); Serial.print(" ");
+  Serial.print(mini.Ki); Serial.print(" ");
+  Serial.println(mini.Kd);
 }
-/*设置PID用户值*/
+
 void doSetPid(char * cmd) {
   char * tmp;
   char * str;
@@ -147,268 +168,165 @@ void doSetPid(char * cmd) {
       d = atof(str + 1);
     }
   }
-  mini.SetPid(p, i, d);
+  mini.updatePid(p, i, d);
 }
 
-/*获取默认域值*/
 void doGetThreshold(char * cmd) {
   int m;
   sscanf(cmd, "%d\n", &m);
   Serial.print("M4 "); Serial.print(m);
   Serial.print(" ");
-  Serial.println(mini.GetThreshold(m));
+  Serial.println(mini.getSensorThreshold(m));
 }
-/*设置用户域值*/
+
 void doSetThreshold(char * cmd) {
   int idx, val;
   sscanf(cmd, "%d %d\n", &idx, &val);
-  mini.SetThreshold(idx, val);
-  robotSetup.data.irThreshold[idx] = val;
-  syncRobotSetup();
-}
-/*设置N20速度*/
-void doDcSpeed(char * cmd) {
-  int idx, speed;
-  sscanf(cmd, "%d %d\n", &idx, &speed);
-  mini.SetDCSpeed(idx, speed, robotSetup.data.dcdiff);
-  //Serial.print(idx);Serial.print(",");Serial.println(speed);
+  mini.setSensorThreshold(idx, val);
+  mini.syncSetup();
 }
 
-void doCarMove(char * cmd) {
-  int fw, lr;
-  sscanf(cmd, "%d %d\n", &fw, &lr);
-  mini.doCarMove(fw, lr, robotSetup.data.dcdiff);
-  Serial.println("M201");
-}
-
-void doEye(char * cmd) {
+void doSpotlight(char * cmd) {
   int left, right;
   sscanf(cmd, "%d %d\n", &left, &right);
-  mini.doEye(left, right);
-  Serial.println("M6");
+  mini.spotlightSet(left, right);
 }
 
 void doDistance() {
   float distance;
-  distance = mini.doDistance();
+  distance = mini.distance();
   Serial.print("M7 ");
   Serial.println(distance);
 }
 
 void doBattery() {
   float v ;
-  v = mini.doBattery();
+  v = mini.batteryVoltage();
   Serial.print("M8 ");
   Serial.println(v);
 }
-/*底部RGB*/
-void doHoverLight(char * cmd) {
-  int pix, r, g, b;
-  sscanf(cmd, "%d %d %d %d\n", &pix, &r, &g, &b);
-  mini.HoverLight(pix, r, g, b);
-  Serial.println("M13");
-}
-
-void doBuzzer(char * cmd) {
-  int freq, t;
-  sscanf(cmd, "%d %d\n", &freq, &t);
-  Serial.println("M18");
-  mini.buzz(freq, t);
-
-}
 
 void doButton1() {
-  Serial.print("M9 "); Serial.println(mini.GetButton1());
+  Serial.print("M9 "); Serial.println(!mini.buttonGet(1));
 }
 
 void doButton2() {
-  Serial.print("M10 "); Serial.println(mini.GetButton2());
+  Serial.print("M10 "); Serial.println(!mini.buttonGet(2));
+}
+
+void doInfraRead(){
+  Serial.print("M11 ");
+  Serial.println(mini.infraReceive(), HEX);
 }
 
 void doInfraSend(char * cmd) {
   int n;
   sscanf(cmd, "%x\n", &n);
-  irsend.sendNEC(n, 32);
-  Serial.println("M12");
-  irrecv.enableIRIn();
+  mini.infraSend(n);
 }
 
-void doLCD(char * cmd) {
-  int i = 0;
-  lcd.clear();
-  while (cmd[i] != '\0' && cmd[i] != '\r' && cmd[i] != '\n') {
-    lcd.write(cmd[i]);
-    i++;
-  }
-  Serial.println("M15");
+void doHoverLight(char * cmd) {
+  int pix, r, g, b;
+  sscanf(cmd, "%d %d %d %d\n", &pix, &r, &g, &b);
+  mini.hoverRgbShow(pix, r, g, b);
 }
 
 void doFrontRGB(char * cmd) {
   int pix, r, g, b;
   sscanf(cmd, "%d %d %d %d\n", &pix, &r, &g, &b);
-  mini.FrontRGB(pix, r, g, b);
-  Serial.println("M16");
+  mini.headRgbShow(pix, r, g, b);
 }
 
-void doWriteDcAdjust(char *cmd)
+void doRGBBrightness(char * cmd){
+  int brightness;
+  sscanf(cmd, "%d\n", &brightness);
+  mini.setRgbBrightness(brightness);
+}
+
+void doMusic(char * cmd){
+    mini.playMusic(cmd);
+}
+
+void doBuzzer(char * cmd) {
+  int freq, t;
+  sscanf(cmd, "%d %d\n", &freq, &t);
+  mini.buzz(freq, t);
+}
+
+void doNote(char * cmd){
+  int note, clap;
+  sscanf(cmd, "%d %d\n", &note, &clap);
+  mini.playNote(note, clap);
+}
+
+void doDcSpeed(char * cmd) {
+  int spdl, spdr;
+  sscanf(cmd, "%d %d\n", &spdl, &spdr);
+  mini.speedSet(spdl, spdr);
+}
+
+void doDcSpeedWait(char * cmd){
+  int spdl, spdr, t;
+  sscanf(cmd, "%d %d %d\n", &spdl, &spdr, &t);
+  mini.speedSet(spdl, spdr, t);
+  Serial.println("M202");
+}
+
+void setMotorDiff(char *cmd)
 {
-  robotSetup.data.dcdiff = atof(cmd);
-  syncRobotSetup();
+  mini.motorDiffSet(atof(cmd));
+  mini.syncSetup();
+}
+
+void getMotorDiff()
+{
+  Serial.print("M210 ");
+  Serial.println(mini.motorDiffGet());
 }
 
 void doJoystick(char * cmd) {
   int posX, posY, fw, lr;
   sscanf(cmd, "%d %d\n", &posX, &posY );
-  /* // too costly
-    float angle = atan((float)posY/(float)posX)/PI*360;
-    float vec = sqrt(sq(posX)+sq(posY));
-    Serial.print("joy: ");Serial.print(angle);Serial.print(" ");Serial.println(vec);
-  */
   fw = posY * 2;
   lr = posX;
-  mini.doCarMove(fw, lr, robotSetup.data.dcdiff);
+  mini.speedSet(fw + lr, -(fw - lr));
 }
 
-void doReadDcAdjust()
-{
-  Serial.print("M210 ");
-  Serial.println(robotSetup.data.dcdiff);
-}
-
-void initRobotSetup() {
-  int i;
-  for (i = 0; i < SETUPLEN; i++) {
-    robotSetup.buf[i] = EEPROM.read(i);
-  }
-  if (robotSetup.data.sign != 1223) {
-    Serial.println("Init robot setup");
-    memset(robotSetup.buf, 0, 16);
-    robotSetup.data.sign = 1223;
-    robotSetup.data.dcdiff = 1.0;
-    for (int idx = 0; idx < 5; idx++) {
-      robotSetup.data.irThreshold[idx] = 100;
-    }
-    syncRobotSetup();
-  }
-  for (int idx = 0; idx < 5; idx++) {
-    mini.SetThreshold(idx, robotSetup.data.irThreshold[idx]);
-  }
-}
-
-void syncRobotSetup()
-{
-  int i;
-  for (i = 0; i < SETUPLEN; i++) {
-    //Serial.print(robotSetup.buf[i] & 0xFF, HEX);Serial.print(" ");
-    EEPROM.write(i, robotSetup.buf[i]);
-  }
-}
 void setThresholdAll(char * cmd)
 {
   int num;
   sscanf(cmd, "%d\n", &num);
   for (int idx = 0; idx < 5; idx++)
   {
-    mini.SetThreshold(idx, 150);
-    robotSetup.data.irThreshold[idx] = num;
-  }
-}
-int ADValMax[5];
-int ADValMin[5];
-int ADValAve[5];
-int AD[5] = { A3, A2, A1, A0, A6};
-void doCalibrationThreshold()
-{
-  int temp;//临时变量 确保if比较完读取到的值不会变化
-
-  for (int idx = 0; idx < 5; idx++)
-  {
-    temp = analogRead(AD[idx]);
-    if ( temp < ADValMin[idx])
-    {
-      ADValMin[idx] = temp;
-    }
-    if ( temp > ADValMax[idx])
-    {
-      ADValMax[idx] = temp;
-    }
-  }
-  //    for(int i=0;i<5;i++)
-  //    {
-  //    Serial.print(ADVal[i]);
-  //    Serial.print(" ");
-  //    }
-  //    Serial.println("");
-}
-int8_t dcMark = 0;          // 每自加一 时间过了450ms
-bool turnMark = 0;          //小车每450ms进入一次 这个标签决定小车是否执行旋转程序
-void doCarTurn()
-{
-  if (!turnMark)
-    return;
-  switch (dcMark)
-  {
-    case 1:                    //左90
-      for (int idx = 0; idx < 5; idx++) //转之前读一次巡线传感器初始值    在这之前 储存的传感器值无效
-      {
-        ADValMax[idx] = ADValMin[idx] = analogRead(AD[idx]);
-      }
-      mini.SetDCSpeed(1, -50, robotSetup.data.dcdiff);
-      mini.SetDCSpeed(2, 50, robotSetup.data.dcdiff);
-      break;
-    case 3:                    //右90
-      mini.SetDCSpeed(1, 50, robotSetup.data.dcdiff);
-      mini.SetDCSpeed(2, -50, robotSetup.data.dcdiff);
-      break;
-    case 5:                    //右90
-      mini.SetDCSpeed(1, 50, robotSetup.data.dcdiff);
-      mini.SetDCSpeed(2, -50, robotSetup.data.dcdiff);
-      break;
-    case 7:                    //左90
-      mini.SetDCSpeed(1, -50, robotSetup.data.dcdiff);
-      mini.SetDCSpeed(2, 50, robotSetup.data.dcdiff);
-      break;
-    default:                   //每转一次 停450ms
-      mini.SetDCSpeed(0, 0, robotSetup.data.dcdiff);
-      break;
-  }
-  dcMark++;
-  if (dcMark > 8)                   //小车旋转结束
-  {
-    turnMark = 0;                 //小车旋转结束
-    dcMark = 0;
-    Serial.println("Result");    //EEPROM写阈值
-
-    for (int idx = 0; idx < 5; idx++)
-    {
-      ADValAve[idx] = (ADValMax[idx] + ADValMin[idx]) / 2;
-      mini.SetThreshold(idx, ADValAve[idx]);
-      robotSetup.data.irThreshold[idx] = ADValAve[idx];
-      Serial.print(robotSetup.data.irThreshold[idx]);
-    }
-    syncRobotSetup();
-    mini.setMode(0);               //开始巡线
+    mini.setSensorThreshold(idx, num);
   }
 }
 
-void doRingRGB(char * cmd) {
-  int pix, r, g, b;
-  sscanf(cmd, "%d %d %d %d\n", &pix, &r, &g, &b);
-  mini.RingRGB(pix, r, g, b);
-  Serial.println("M217");
+void doMatrixString(char * cmd){
+  mini.matrixShowString(cmd);  
 }
 
-bool irEnable = 0;
-
-void doInfraRead(){
-  if (!irEnable)
-  {
-    irrecv.enableIRIn();
-    irEnable = 1;
+void doMatrixShow(char * cmd){
+  uint16_t mat[8];
+  char * tmp = "0000";
+  int index = 0;
+  for(int i=0;i<32;i+=4){
+    tmp[0] = cmd[i];
+    tmp[1] = cmd[i+1];
+    tmp[2] = cmd[i+2];
+    tmp[3] = cmd[i+3];
+    mat[index] = strtol(tmp, NULL, 16);
+    //Serial.print(String(mat[index], 16)+" ");
+    index++;
   }
-  Serial.print("M11 ");
-  Serial.println(irdecoded, HEX);
-  irdecoded = -1; 
+  //Serial.println("M21");
+  mini.matrixShow((uint8_t *)mat);
+}
+
+void doExtIO(char * cmd){
+  int d12, d10, t;
+  sscanf(cmd, "%d %d %d\n", &d12, &d10, &t);
+  mini.extIo(d12, d10 ,t);
 }
 
 void parseCode(char * cmd) {
@@ -420,7 +338,7 @@ void parseCode(char * cmd) {
   switch (code) {
     case 0:
       echoVersion();
-      mini._codingMode = 1;
+      mode = CODING;
       break;
     case 1:
       doGetSensor(tmp);
@@ -439,7 +357,7 @@ void parseCode(char * cmd) {
       break;
     // peripherals control
     case 6: // front eye command
-      doEye(tmp);
+      doSpotlight(tmp);
       break;
     case 7: // ultrasonci sensor
       doDistance();
@@ -462,26 +380,44 @@ void parseCode(char * cmd) {
     case 13: // hover light
       doHoverLight(tmp);
       break;
+    case 14:
+      doRGBBrightness(tmp);
+      break;
     case 15: // lcd
-      doLCD(tmp);
+      //doLCD(tmp);
       break;
     case 16: // front rgb
       doFrontRGB(tmp);
       break;
+    case 17: // music
+      doMusic(tmp);
+      break;
     case 18: // buzzer
       doBuzzer(tmp);
+      break;
+    case 19: // play note
+      doNote(tmp);
+      break;
+    case 20:
+      doMatrixString(tmp);
+      break;
+    case 21:
+      doMatrixShow(tmp);
+      break;
+    case 30:
+      doExtIO(tmp);
       break;
     case 200:
       doDcSpeed(tmp);
       break;
-    case 201:
-      doCarMove(tmp);
-      break;
+    case 202:
+      doDcSpeedWait(tmp);
+      break;      
     case 209:
-      doWriteDcAdjust(tmp);
+      setMotorDiff(tmp);
       break;
     case 210:
-      doReadDcAdjust();
+      getMotorDiff();
       break;
     case 214:
       doJoystick(tmp);
@@ -489,11 +425,11 @@ void parseCode(char * cmd) {
     case 215:
       setThresholdAll(tmp);
       break;
-    case 217:
-      doRingRGB(tmp);
-      break;
     case 300:
       gyroCalibrate();
+      break;
+    case 310:
+      sensorCalibration();
       break;
     case 999:
       asm volatile ("  jmp 0");
@@ -509,42 +445,61 @@ void parseCmd(char * cmd) {
     parseCode(cmd + 1);
   }
 }
-void setup() {
-  digitalWrite(EYE_LEFT, 1);
-  digitalWrite(EYE_RIGHT, 1);
+
+void setup(){
+  Wire.begin();
   Serial.begin(115200);
+  mini.init();
+  pidTh = timer.every(5, pidWork);
   echoVersion();
-  initRobotSetup();
-  lcd.init();
-  lcd.backlight();
-  lcd.print("Hello MiniLFR\0");
-  timer.every(5, pidWork);
-  timer.every(450, doCarTurn);
-  // irrecv.enableIRIn();
+}
+
+void avoidLoop(){
+  float temp = mini.distance();
+  if (temp < 10){
+    mini.stopMotor();
+    delay(20);
+    mini.speedSet(-100, -100, 200);
+  }else{
+    mini.speedSet(random(50,150), random(50,150));
+  }
+  delay(20);
 }
 
 char buf[64];
 int8_t bufindex;
 
-
-void loop() {
-  // pos = echoTrace();
-  timer.update();
-  if (mini.mode() == 1)      //避障模式
-  {
-    mini.avoid_mode(robotSetup.data.dcdiff);
-    return ;
+void loop(){
+  if(mode == IDLE){
+    if(mini.buttonGet(1) == 0){
+      mini.playMusic(powerup);
+      if(mini.buttonGet(1) == 0){
+        mini.buzz(1000, 200, 300);
+        mini.buzz(1000, 200, 300);
+        sensorCalibration();
+      }else{
+        mini.startLineFollow();
+        mode = LINEFOLLOW;
+      }
+    }
+    if(mini.buttonGet(2) == 0){
+      mini.playMusic(bdding);
+      mode = OBJECTAVOID;
+    }
+    mini.loop();
+  }else if(mode == LINEFOLLOW){
+    timer.update();  
+  }else if(mode == OBJECTAVOID){
+    avoidLoop();
+    if(mini.buttonGet(2) == 0){
+      mode = IDLE;
+      mini.playMusic(baddy);
+      mini.stopMotor();
+    }
+  }else{
+    mini.loop();  
   }
-  if (mini.mode() == 2)      //校准阈值模式
-  {
-    turnMark = 1;            //小车旋转
-    doCalibrationThreshold();//读传感器值 储存
-    return ;
-  }
-
-
-
-
+  
   while (Serial.available()) {
     char c = Serial.read();
     buf[bufindex++] = c;
@@ -557,16 +512,6 @@ void loop() {
     if (bufindex >= 64) {
       bufindex = 0;
     }
-  }
-
-  if (irrecv.decode(&results))
-  {
-    if (results.value != 0xFFFFFFFF)
-    {
-      irdecoded = results.value;
-      
-    }
-    irrecv.resume(); // Receive the next value
   }
 }
 
