@@ -237,6 +237,13 @@ void doFrontRGB(char * cmd) {
   mini.headRgbShow(pix, r, g, b);
 }
 
+
+void doRingRGBShow(char * cmd){
+  int pix, r, g, b;
+  sscanf(cmd, "%d %d %d %d\n", &pix, &r, &g, &b);
+  mini.ringRgbShow(pix, r, g, b);
+}
+
 void doRGBBrightness(char * cmd){
   int brightness;
   sscanf(cmd, "%d\n", &brightness);
@@ -404,6 +411,9 @@ void parseCode(char * cmd) {
     case 21:
       doMatrixShow(tmp);
       break;
+    case 22:
+      doRingRGBShow(tmp);
+      break;      
     case 30:
       doExtIO(tmp);
       break;

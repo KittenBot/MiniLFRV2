@@ -55,6 +55,7 @@ public:
 	void setRgbBrightness(int value);
 	void hoverRgbShow(int pix, int r, int g, int b);
 	void headRgbShow(int pix, int r, int g, int b);
+	void ringRgbShow(int pix, int r, int g, int b);
 	// Sensor
 	int getSensor(int index);
 	void setSensorThreshold(int index, int value);

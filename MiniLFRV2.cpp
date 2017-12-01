@@ -10,6 +10,8 @@
 
 Adafruit_NeoPixel hoverRgb(2);
 Adafruit_NeoPixel headRgb(2);
+Adafruit_NeoPixel ringRgb(16);
+
 // start from up-left
 Kittenbot_16x8matrix ledMat = Kittenbot_16x8matrix();
 
@@ -54,6 +56,9 @@ void MiniLFRV2::init() {
   headRgb.begin();
   headRgb.setPin(EYE_RIGHT);
   headRgb.setBrightness(100);
+  ringRgb.begin();
+  ringRgb.setPin(EYE_LEFT);
+  ringRgb.setBrightness(100);
   loadSetup();
   hoverRgbShow(0,0,0,0);
   spotlightSet(0,0);
@@ -168,6 +173,7 @@ void MiniLFRV2::buzz(int freq, int duration, int delayms){
 void MiniLFRV2::setRgbBrightness(int value){
   hoverRgb.setBrightness(value);
   headRgb.setBrightness(value);
+  ringRgb.setBrightness(value);
 }
 
 void MiniLFRV2::hoverRgbShow(int pix, int r, int g, int b){
@@ -192,6 +198,18 @@ void MiniLFRV2::headRgbShow(int pix, int r, int g, int b){
     headRgb.setPixelColor(pix - 1, r, g, b);
   }
   headRgb.show();
+}
+
+void MiniLFRV2::ringRgbShow(int pix, int r, int g, int b){
+  if (pix == 0) {
+    for (int i = 0;i < 16;i++) {
+      ringRgb.setPixelColor(i, r, g, b);
+    }
+  }
+  else {
+    ringRgb.setPixelColor(pix - 1, r, g, b);
+  }
+  ringRgb.show();
 }
 
 int MiniLFRV2::getSensor(int index){
