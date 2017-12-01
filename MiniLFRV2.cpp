@@ -57,6 +57,7 @@ void MiniLFRV2::init() {
   loadSetup();
   hoverRgbShow(0,0,0,0);
   spotlightSet(0,0);
+  irrecv.enableIRIn();
 }
 
 void MiniLFRV2::loadSetup(){
