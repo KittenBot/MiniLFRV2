@@ -65,7 +65,7 @@ public:
   void setSensorMin(int index, int value);
   int getSensorMin(int index);
 	// LED matrix
-	void matrixShow(uint8_t * data);
+    void matrixShow(const char * data);
 	void matrixShowString(const char * str);
 	// Linefollow related
 	void updatePid(float p, float i, float d);

@@ -237,10 +237,23 @@ int MiniLFRV2::getSensorMin(int index){
   return robotSetup.data.irMin[index];
 }
 
-void MiniLFRV2::matrixShow(uint8_t * data){
+void MiniLFRV2::matrixShow(const char * cmd){
+  uint16_t mat[8];
+  char * tmp = "0000";
+  int index = 0;
+  for(int i=0;i<32;i+=4){
+    tmp[0] = cmd[i];
+    tmp[1] = cmd[i+1];
+    tmp[2] = cmd[i+2];
+    tmp[3] = cmd[i+3];
+    mat[index] = strtol(tmp, NULL, 16);
+    //Serial.print(String(mat[index], 16)+" ");
+    index++;
+  }
+  //Serial.println("M21");
   ledMat.begin(0x70);
   ledMat.clear();
-  ledMat.drawBitmap(0, 0, data, 16, 8, LED_ON);
+  ledMat.drawBitmap(0, 0, (uint8_t *)mat, 16, 8, LED_ON);
   ledMat.writeDisplay();
 }
 
@@ -340,13 +353,13 @@ void MiniLFRV2::infraSend(int hex){
 }
 
 void MiniLFRV2::extIo(int d12, int d10, int t){
-  pinMode(12, OUTPUT);
-  pinMode(10, OUTPUT);
-  digitalWrite(12, d12);
-  digitalWrite(10, d10);
+  pinMode(EYE_LEFT, OUTPUT);
+  pinMode(EYE_RIGHT, OUTPUT);
+  digitalWrite(EYE_LEFT, d12);
+  digitalWrite(EYE_RIGHT, d10);
   delay(t);
-  digitalWrite(12, 1);
-  digitalWrite(10, 1);
+  digitalWrite(EYE_LEFT, 1);
+  digitalWrite(EYE_RIGHT, 1);
 }
 
 uint32_t MiniLFRV2::infraReceive(){
