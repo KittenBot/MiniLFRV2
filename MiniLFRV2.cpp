@@ -138,8 +138,9 @@ int MiniLFRV2::buttonGet(int btn)
 void MiniLFRV2::spotlightSet(int left, int right){
   pinMode(EYE_LEFT, OUTPUT);
   pinMode(EYE_RIGHT, OUTPUT);
-  digitalWrite(EYE_LEFT, !left);
-  digitalWrite(EYE_RIGHT, !right);
+  // inverse left right
+  digitalWrite(EYE_RIGHT, !left);
+  digitalWrite(EYE_LEFT, !right);
 }
 
 float MiniLFRV2::distance(){
