@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "L3G.h"
 
-#define FIRMWARE "Linefollow V3.0\r\n"
+#define FIRMWARE "Linefollow V3.1\r\n"
 
 const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
 const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
@@ -206,12 +206,9 @@ void doBattery() {
   Serial.println(v);
 }
 
-void doButton1() {
-  Serial.print("M9 "); Serial.println(!mini.buttonGet(1));
-}
-
-void doButton2() {
-  Serial.print("M10 "); Serial.println(!mini.buttonGet(2));
+void doButton(char * cmd) {
+  int idx = atoi(cmd);
+  Serial.print("M9 "); Serial.println(!mini.buttonGet(idx));
 }
 
 void doInfraRead(){
@@ -314,20 +311,7 @@ void doMatrixString(char * cmd){
 }
 
 void doMatrixShow(char * cmd){
-  uint16_t mat[8];
-  char * tmp = "0000";
-  int index = 0;
-  for(int i=0;i<32;i+=4){
-    tmp[0] = cmd[i];
-    tmp[1] = cmd[i+1];
-    tmp[2] = cmd[i+2];
-    tmp[3] = cmd[i+3];
-    mat[index] = strtol(tmp, NULL, 16);
-    //Serial.print(String(mat[index], 16)+" ");
-    index++;
-  }
-  //Serial.println("M21");
-  mini.matrixShow((uint8_t *)mat);
+  mini.matrixShow(cmd);
 }
 
 void doExtIO(char * cmd){
@@ -372,11 +356,8 @@ void parseCode(char * cmd) {
     case 8: // battery
       doBattery();
       break;
-    case 9: // button 1 status
-      doButton1();
-      break;
-    case 10: // button 2 status
-      doButton2();
+    case 9: // button status
+      doButton(tmp);
       break;
     case 11: // irvalue
       doInfraRead();
