@@ -243,10 +243,10 @@ void MiniLFRV2::matrixShow(const char * cmd){
   char * tmp = "0000";
   int index = 0;
   for(int i=0;i<32;i+=4){
-    tmp[0] = cmd[i];
-    tmp[1] = cmd[i+1];
-    tmp[2] = cmd[i+2];
-    tmp[3] = cmd[i+3];
+    tmp[2] = cmd[i];
+    tmp[3] = cmd[i+1];
+    tmp[0] = cmd[i+2];
+    tmp[1] = cmd[i+3];
     mat[index] = strtol(tmp, NULL, 16);
     //Serial.print(String(mat[index], 16)+" ");
     index++;
