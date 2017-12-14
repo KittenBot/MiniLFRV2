@@ -208,7 +208,7 @@ void doBattery() {
 
 void doButton(char * cmd) {
   int idx = atoi(cmd);
-  Serial.print("M9 "); Serial.println(!mini.buttonGet(idx));
+  Serial.print("M9 "); Serial.println(mini.buttonGet(idx));
 }
 
 void doInfraRead(){
@@ -462,9 +462,9 @@ int8_t bufindex;
 
 void loop(){
   if(mode == IDLE){
-    if(mini.buttonGet(1) == 0){
+    if(mini.buttonGet(1) == 1){
       mini.playMusic(powerup);
-      if(mini.buttonGet(1) == 0){
+      if(mini.buttonGet(1) == 1){
         mini.buzz(1000, 200, 300);
         mini.buzz(1000, 200, 300);
         sensorCalibration();
@@ -473,7 +473,7 @@ void loop(){
         mode = LINEFOLLOW;
       }
     }
-    if(mini.buttonGet(2) == 0){
+    if(mini.buttonGet(2) == 1){
       mini.playMusic(bdding);
       mode = OBJECTAVOID;
     }
@@ -482,7 +482,7 @@ void loop(){
     timer.update();  
   }else if(mode == OBJECTAVOID){
     avoidLoop();
-    if(mini.buttonGet(2) == 0){
+    if(mini.buttonGet(2) == 1){
       mode = IDLE;
       mini.playMusic(baddy);
       mini.stopMotor();

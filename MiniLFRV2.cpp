@@ -128,9 +128,9 @@ void MiniLFRV2::stopMotor(){
 int MiniLFRV2::buttonGet(int btn)
 {
   if(btn == 1){
-    return digitalRead(PIN_BTN1);
+    return !digitalRead(PIN_BTN1);
   }else if(btn == 2){
-    return digitalRead(PIN_BTN2);
+    return !digitalRead(PIN_BTN2);
   }
   return -1;
 }
