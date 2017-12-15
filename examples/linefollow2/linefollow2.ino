@@ -294,6 +294,7 @@ void doJoystick(char * cmd) {
   fw = posY * 2;
   lr = posX;
   mini.speedSet(fw + lr, -(fw - lr));
+  
 }
 
 void setThresholdAll(char * cmd)
@@ -401,6 +402,9 @@ void parseCode(char * cmd) {
     case 200:
       doDcSpeed(tmp);
       break;
+    case 201:
+      doJoystick(tmp);
+      break;
     case 202:
       doDcSpeedWait(tmp);
       break;      
@@ -409,9 +413,6 @@ void parseCode(char * cmd) {
       break;
     case 210:
       getMotorDiff();
-      break;
-    case 214:
-      doJoystick(tmp);
       break;
     case 215:
       setThresholdAll(tmp);
