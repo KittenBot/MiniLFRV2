@@ -152,6 +152,9 @@ float MiniLFRV2::distance(){
   pinMode(EYE_LEFT, INPUT);
   temp = pulseIn(EYE_LEFT, HIGH);
   distance = (float)temp / 58.2;
+  if(distance == 0){
+	  distance = 999;
+  }
   return distance;
 }
 
