@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "L3G.h"
 
-#define FIRMWARE "Linefollow V3.4\r\n"
+#define FIRMWARE "Linefollow V3.5\r\n"
 
 const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
 const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
@@ -297,6 +297,14 @@ void doJoystick(char * cmd) {
   
 }
 
+void doJoystick2(char * cmd){
+  int posX, posY, fw, lr;
+  sscanf(cmd, "%d %d\n", &posX, &posY );
+  fw = posY * 2;
+  lr = posX;
+  mini.speedSet(fw + lr, (fw - lr));
+}
+
 void setThresholdAll(char * cmd)
 {
   int num;
@@ -414,6 +422,9 @@ void parseCode(char * cmd) {
       break;
     case 210:
       getMotorDiff();
+      break;
+	case 214:
+      doJoystick2(tmp);
       break;
     case 215:
       setThresholdAll(tmp);
