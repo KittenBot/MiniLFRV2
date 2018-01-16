@@ -14,27 +14,51 @@
 #define PIN_M2A 11
 #define PIN_M2B 3
 
+#define IR_POWER	0xFFA25D
+#define IR_MENU		0xFF629D
+#define IR_MUTE		0xFFE21D
+#define IR_MODE		0xFF22DD
+#define IR_PLUS		0xFF02FD
+#define IR_RETURN	0xFFC23D
+#define IR_BACK		0xFFE01F
+#define IR_PLAY		0xFFA857
+#define IR_FORWARD	0xFF906F
+#define IR_0		0xFF6897
+#define IR_MINUS	0xFF9867
+#define IR_OK		0xFFB04F
+#define IR_1		0xFF30CF
+#define IR_2		0xFF18E7
+#define IR_3		0xFF7A85
+#define IR_4		0xFF10EF
+#define IR_5		0xFF38C7
+#define IR_6		0xFF5AA5
+#define IR_7		0xFF42BD
+#define IR_8		0xFF4AB5
+#define IR_9		0xFF52AD
+
 class MiniLFRV2
 {
 private:
 	float error, errorLast, erroInte;
-  int outlineCnt;
-  float getTrace();
-  float calcPid(float input);
+	int outlineCnt;
+	float getTrace();
+	float calcPid(float input);
+	bool loopCallback(uint32_t key);
    
 public:
-  float Kp = 90; // 80
-  float Ki = 0.15; // 0.15
-  float Kd = 1200; //1200
-  
+	float Kp = 90; // 80
+	float Ki = 0.15; // 0.15
+	float Kd = 1200; //1200
+
 	MiniLFRV2();
 	void init();
-  void loadSetup();
-  void syncSetup();
+	void loadSetup();
+	void syncSetup();
 	void loop();
+	int registerCallback(uint32_t key, void * fun());
 	// motor related
 	void speedSet(int spdl, int spdr);
-  void speedSet(int spdl, int spdr, int duration);
+	void speedSet(int spdl, int spdr, int duration);
 	void stopMotor();
 	void motorDiffSet(float diff);
 	float motorDiffGet();
@@ -43,9 +67,9 @@ public:
 	void spotlightSet(int left, int right);
 	float distance();
 	float batteryVoltage();
-  uint32_t infraReceive();
-  void infraSend(int hex);
-  void extIo(int d12, int d10, int t);
+	uint32_t infraReceive();
+	void infraSend(int hex);
+	void extIo(int d12, int d10, int t);
 	// music 
 	void buzz(int freq, int duration);
 	void buzz(int freq, int duration, int delayms);
@@ -60,18 +84,18 @@ public:
 	int getSensor(int index);
 	void setSensorThreshold(int index, int value);
 	int getSensorThreshold(int index);
-  void setSensorMax(int index, int value);
-  int getSensorMax(int index);
-  void setSensorMin(int index, int value);
-  int getSensorMin(int index);
+	void setSensorMax(int index, int value);
+	int getSensorMax(int index);
+	void setSensorMin(int index, int value);
+	int getSensorMin(int index);
 	// LED matrix
-    void matrixShow(const char * data);
+	void matrixShow(const char * data);
 	void matrixShowString(const char * str);
 	// Linefollow related
 	void updatePid(float p, float i, float d);
-  void startLineFollow();
+	void startLineFollow();
 	int pidLoop();
 protected:
-  int AD[5] = { A3,A2,A1,A0,A6 };
+	int AD[5] = { A3,A2,A1,A0,A6 };
 };
 #endif

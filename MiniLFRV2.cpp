@@ -34,6 +34,13 @@ static union {
 } robotSetup;
 
 
+struct CallbackDict{
+	uint32_t key;
+	void (*fun)();
+};
+
+CallbackDict callbackAry[8];
+
 MiniLFRV2::MiniLFRV2() {
 
 }
@@ -245,15 +252,15 @@ uint16_t mat[8];
 char tmp[5] = "0000";
 void MiniLFRV2::matrixShow(const char * cmd){
   int index = 0;
-  memset(mat, 0, sizeof(mat));
+  //memset(mat, 0, sizeof(mat));
   //Serial.println(cmd);
   for(int i=0;i<32;i+=4){
     tmp[2] = cmd[i];
     tmp[3] = cmd[i+1];
     tmp[0] = cmd[i+2];
     tmp[1] = cmd[i+3];
-	Serial.println(cmd+i);
-	Serial.println(tmp);
+	//Serial.println(cmd+i);
+	//Serial.println(tmp);
     mat[index] = strtol(tmp, NULL, 16);
     //Serial.print(String(mat[index], 16)+" ");
     index++;
@@ -342,13 +349,37 @@ void MiniLFRV2::startLineFollow(){
   erroInte = errorLast = error = 0;
 }
 
+int MiniLFRV2::registerCallback(uint32_t key, void * fun()){
+	for(int i=0;i<8;i++){
+		if(callbackAry[i].key == 0){
+			callbackAry[i].key = key;
+			callbackAry[i].fun = fun;
+			return i;
+		}
+	}
+	return -1;
+}
+
+bool MiniLFRV2::loopCallback(uint32_t key){
+	for(int i=0;i<8;i++){
+		if(callbackAry[i].key = key){
+			callbackAry[i].fun();
+			return true;
+		}
+	}
+	return false;
+}
+
 void MiniLFRV2::loop(){
   if (irrecv.decode(&irresult))
   {
     if (irresult.value != 0xFFFFFFFF)
     {
       irdecoded = irresult.value;
-      Serial.println("TRIG 1 "+String(irdecoded, HEX));
+	  // todo: add callback entry for button and others  
+	  if(!loopCallback(irdecoded)){
+		Serial.println("TRIG 1 "+String(irdecoded, HEX));  
+	  }
     }
     irrecv.resume(); // Receive the next value
   }
