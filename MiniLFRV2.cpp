@@ -362,7 +362,7 @@ int MiniLFRV2::registerCallback(uint32_t key, void * fun()){
 
 bool MiniLFRV2::loopCallback(uint32_t key){
 	for(int i=0;i<8;i++){
-		if(callbackAry[i].key = key){
+		if(callbackAry[i].key == key){
 			callbackAry[i].fun();
 			return true;
 		}
