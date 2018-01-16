@@ -96,10 +96,10 @@ void sensorCalibration(){
 
   // trun left
   int movecount = 0;
-  while(movecount<480){
-    if(movecount == 0){ mini.speedSet(-55, 55);}
-    else if(movecount == 120){ mini.speedSet(55, -55);}
-    else if(movecount == 360){ mini.speedSet(-55, 55);}
+  while(movecount<800){
+    if(movecount == 0){ mini.speedSet(-60, 60);}
+    else if(movecount == 200){ mini.speedSet(60, -60);}
+    else if(movecount == 600){ mini.speedSet(-60, 60);}
     for(int i=0;i<5;i++){
       int s = mini.getSensor(i);
       if(s<adcMin[i]){
