@@ -20,8 +20,6 @@ uint32_t irdecoded = 0xffffffff;
 IRsend irsend;
 IRrecv irrecv(2);
 
-int adval[5];
-
 static union {
   struct {
     unsigned int sign;
@@ -293,55 +291,97 @@ void MiniLFRV2::updatePid(float p, float i, float d){
   Kd = d;
 }
 
-float MiniLFRV2::getTrace(){
-  float tr[5];
+uint8_t MiniLFRV2::getTrace(int * bias){
+  uint8_t trace = 0;
+  int tr[5];
+  int adval[5];
+  long avg = 0;
+  int sum = 0;
+  int offset;
   for (int i = 0; i < 5; i++) {
-    adval[i] = analogRead(AD[i]);
-    int admap = map(adval[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
-    int th = map( robotSetup.data.irThreshold[i],robotSetup.data.irMin[i],robotSetup.data.irMax[i],0,1000);
-    tr[i] = max(float(th-admap)*1.8/th, 0); // ignore less than zero values
-  }
-  float errLeft = tr[0]*2+tr[1];
-  float errRight = tr[4]*2+tr[3];
-  float errDelta = errLeft - errRight;
-  if(errRight<0.3 && errLeft<0.3 && tr[2]<0.3){
-    outlineCnt++;
-  }else if(errRight>2 && errLeft>2){
-    outlineCnt++;
-  }else{
-    outlineCnt=0;  
+	adval[i] = analogRead(AD[i]);
+	tr[i] = 100 - map(adval[i], robotSetup.data.irMin[i], robotSetup.data.irMax[i], 0, 100);
+	avg += ((long)tr[i]*100*i);
+	sum += tr[i];
+	if(adval[i]<robotSetup.data.irThreshold[i]){
+		trace |= (1<<i);
+	}
   }
   
-  return errDelta;
+  offset = avg/sum - 200;
+  if(trace == 0){ // out off line
+	if(bias<0){
+		offset = 0;
+	} else {
+		offset = 200;
+	}
+  }
+  *bias = offset;
+  return trace;
 }
 
 float MiniLFRV2::calcPid(float input) {
   float errorDiff;
   float output;
-  error = error * 0.7 + input * 0.3; // filter
+  error = error * 0.5 + input * 0.5; // filter
+  //error = input;
   errorDiff = error - errorLast;
   erroInte = constrain(erroInte + error, -50, 50);
   output = Kp * error + Ki * erroInte + Kd * errorDiff;
 
   errorLast = error;
-
+  output = constrain(output, -150, 150);
   return output;
 }
 
-int MiniLFRV2::pidLoop(){
+int MiniLFRV2::findLine(int dir){
+	uint8_t tr;
+	int temp;
+	if(dir == 0){
+		speedSet(-60, -60);
+	}else if(dir == 1){
+		speedSet(-60, 60);
+	}else if(dir == 2){
+		speedSet(60, -60);
+	}
+	bool online = false;
+	while(!online){
+		tr = getTrace(&temp);
+		online = (tr & 0b00001110);
+		//delay(2);
+	}
+	return 0;
+}
+
+int MiniLFRV2::lineFollow(){
   int spdL, spdR;
-  float bias = getTrace();
-  if (outlineCnt > 100) {
-    speedSet(0,0);
-    return -1;
+  static int bias;
+  uint8_t trace = getTrace(&bias);
+  if (trace == 0 || trace == 0b00011111) {
+	outlineCnt++;
+	findLine(0);
+  }else if(trace == 0b00000001){
+	findLine(1);
+  }else if(trace == 0b00010000){
+	findLine(2);  
   }else{
-    float ff = 150; //150
-    float ctrl = -calcPid(bias);
-    spdL = ff + ctrl;
-    spdR = (ff - ctrl);
+	spdL = spdR = 150;
+    float ctrl = calcPid(bias);
+	if(ctrl>0){
+		spdR -= ctrl;
+	}else{
+		spdL += ctrl;
+	}
     speedSet(spdL, spdR);
+	outlineCnt=0;
     return 0;
   }
+  //Serial.println(String(trace, BIN)+" "+String(outlineCnt));
+  if(outlineCnt>10){
+	speedSet(0, 0);
+	return -1;
+  }
+
 }
 
 void MiniLFRV2::startLineFollow(){

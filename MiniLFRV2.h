@@ -41,14 +41,14 @@ class MiniLFRV2
 private:
 	float error, errorLast, erroInte;
 	int outlineCnt;
-	float getTrace();
+	uint8_t getTrace(int * error);
 	float calcPid(float input);
 	bool loopCallback(uint32_t key);
    
 public:
-	float Kp = 90; // 80
-	float Ki = 0.15; // 0.15
-	float Kd = 1200; //1200
+	float Kp = 6.0; // 80
+	float Ki = 0.4; // 0.15
+	float Kd = 200; //1200
 
 	MiniLFRV2();
 	void init();
@@ -94,7 +94,8 @@ public:
 	// Linefollow related
 	void updatePid(float p, float i, float d);
 	void startLineFollow();
-	int pidLoop();
+	int lineFollow();
+	int findLine(int dir);
 protected:
 	int AD[5] = { A3,A2,A1,A0,A6 };
 };
