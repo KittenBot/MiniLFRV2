@@ -96,10 +96,10 @@ void sensorCalibration(){
 
   // trun left
   int movecount = 0;
-  while(movecount<800){
+  while(movecount<600){
     if(movecount == 0){ mini.speedSet(-60, 60);}
-    else if(movecount == 200){ mini.speedSet(60, -60);}
-    else if(movecount == 600){ mini.speedSet(-60, 60);}
+    else if(movecount == 150){ mini.speedSet(60, -60);}
+    else if(movecount == 450){ mini.speedSet(-60, 60);}
     for(int i=0;i<5;i++){
       int s = mini.getSensor(i);
       if(s<adcMin[i]){
@@ -123,8 +123,8 @@ void sensorCalibration(){
 }
 
 
-void pidWork() {
-  int ret = mini.pidLoop();
+void lineFollowWork() {
+  int ret = mini.lineFollow();
   if(ret == -1){
     mini.playMusic(powerdown);
     mode = IDLE;  
@@ -454,7 +454,7 @@ void setup(){
   Wire.begin();
   Serial.begin(115200);
   mini.init();
-  pidTh = timer.every(5, pidWork);
+  pidTh = timer.every(5, lineFollowWork);
   echoVersion();
 }
 
