@@ -278,7 +278,7 @@ void MiniLFRV2::matrixShowString(const char * str){
   ledMat.setTextSize(0);
   ledMat.setTextWrap(false);  // we dont want text to wrap so it scrolls nicely
   ledMat.setTextColor(LED_ON);
-  int offset = -(strlen(str)+1)*5;
+  int offset = -(strlen(str)+2)*5;
   for (int x=15; x>=offset; x--) {
     ledMat.clear();
     ledMat.setCursor(x,0);
