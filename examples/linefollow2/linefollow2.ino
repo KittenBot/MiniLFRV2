@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "L3G.h"
 
-#define FIRMWARE "Linefollow V3.6\r\n"
+#define FIRMWARE "Linefollow V3.7\r\n"
 
 const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
 const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
@@ -96,10 +96,10 @@ void sensorCalibration(){
 
   // trun left
   int movecount = 0;
-  while(movecount<600){
+  while(movecount<800){
     if(movecount == 0){ mini.speedSet(-60, 60);}
-    else if(movecount == 150){ mini.speedSet(60, -60);}
-    else if(movecount == 450){ mini.speedSet(-60, 60);}
+    else if(movecount == 200){ mini.speedSet(60, -60);}
+    else if(movecount == 600){ mini.speedSet(-60, 60);}
     for(int i=0;i<5;i++){
       int s = mini.getSensor(i);
       if(s<adcMin[i]){
@@ -239,6 +239,7 @@ void doRingRGBShow(char * cmd){
   int pix, r, g, b;
   sscanf(cmd, "%d %d %d %d\n", &pix, &r, &g, &b);
   mini.ringRgbShow(pix, r, g, b);
+  Serial.println("M22");
 }
 
 void doRGBBrightness(char * cmd){

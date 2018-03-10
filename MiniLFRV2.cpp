@@ -421,7 +421,7 @@ void MiniLFRV2::loop(){
       irdecoded = irresult.value;
 	  // todo: add callback entry for button and others  
 	  if(!loopCallback(irdecoded)){
-		Serial.println("TRIG MiniLFR.wheninfraget "+String(irdecoded, HEX));  
+		Serial.println("TRIG MiniLFR.wheninfraget infraCmd "+String(irdecoded, HEX));  
 	  }
     }
     irrecv.resume(); // Receive the next value
