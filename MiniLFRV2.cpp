@@ -68,6 +68,7 @@ void MiniLFRV2::init() {
   hoverRgbShow(0,0,0,0);
   spotlightSet(0,0);
   irrecv.enableIRIn();
+  debounce = millis();
 }
 
 void MiniLFRV2::loadSetup(){
@@ -430,6 +431,23 @@ void MiniLFRV2::loop(){
     }
     irrecv.resume(); // Receive the next value
   }
+  if (buttonGet(1)){
+	  if(millis() - debounce > 100){
+		  if(!loopCallback(BUTTON_1)){
+			Serial.println("TRIG MiniLFR.whenbutton button "+String(BUTTON_1, HEX));  
+		  }
+		  debounce = millis();
+	  }
+  }
+  if (buttonGet(2)){
+	  if(millis() - debounce > 100){
+		  if(!loopCallback(BUTTON_2)){
+			Serial.println("TRIG MiniLFR.whenbutton button "+String(BUTTON_2, HEX));  
+		  }
+		  debounce = millis();
+	  }
+  }
+  
 }
 
 void MiniLFRV2::infraSend(int hex){

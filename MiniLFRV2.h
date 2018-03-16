@@ -36,6 +36,9 @@
 #define IR_8		0xFF4AB5
 #define IR_9		0xFF52AD
 
+#define BUTTON_1	0xE0EE0A
+#define BUTTON_2	0xE0EE0B
+
 class MiniLFRV2
 {
 private:
@@ -44,7 +47,7 @@ private:
 	uint8_t getTrace(int * error);
 	float calcPid(float input);
 	bool loopCallback(uint32_t key);
-   
+    unsigned long debounce;
 public:
 	float Kp = 6.0; // 80
 	float Ki = 0.4; // 0.15

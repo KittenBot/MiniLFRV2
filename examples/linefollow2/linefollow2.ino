@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "L3G.h"
 
-#define FIRMWARE "Linefollow V3.7\r\n"
+#define FIRMWARE "Linefollow V3.8\r\n"
 
 const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
 const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
