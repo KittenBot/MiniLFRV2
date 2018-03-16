@@ -288,6 +288,10 @@ void MiniLFRV2::matrixShowString(const char * str){
   }
 }
 
+void MiniLFRV2::matrixShowString(String str){
+  	matrixShowString(str.c_str());
+}
+
 void MiniLFRV2::updatePid(float p, float i, float d){
   Kp = p;
   Ki = i;

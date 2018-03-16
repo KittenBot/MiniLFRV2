@@ -91,6 +91,8 @@ public:
 	// LED matrix
 	void matrixShow(const char * data);
 	void matrixShowString(const char * str);
+	void matrixShowString(String str);
+
 	// Linefollow related
 	void updatePid(float p, float i, float d);
 	void startLineFollow();
