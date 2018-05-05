@@ -426,7 +426,7 @@ void MiniLFRV2::loop(){
       irdecoded = irresult.value;
 	  // todo: add callback entry for button and others  
 	  if(!loopCallback(irdecoded)){
-		Serial.println("TRIG MiniLFR.wheninfraget infraCmd "+String(irdecoded, HEX));  
+		Serial.println("TRIG MiniLFR_wheninfraget infraCmd "+String(irdecoded, HEX));  
 	  }
     }
     irrecv.resume(); // Receive the next value
@@ -434,7 +434,7 @@ void MiniLFRV2::loop(){
   if (buttonGet(1)){
 	  if(millis() - debounce > 100){
 		  if(!loopCallback(BUTTON_1)){
-			Serial.println("TRIG MiniLFR.whenbutton button "+String(BUTTON_1, HEX));  
+			Serial.println("TRIG MiniLFR_whenbutton buttonList "+String(BUTTON_1, HEX));  
 		  }
 		  debounce = millis();
 	  }
@@ -442,7 +442,7 @@ void MiniLFRV2::loop(){
   if (buttonGet(2)){
 	  if(millis() - debounce > 100){
 		  if(!loopCallback(BUTTON_2)){
-			Serial.println("TRIG MiniLFR.whenbutton button "+String(BUTTON_2, HEX));  
+			Serial.println("TRIG MiniLFR_whenbutton buttonList "+String(BUTTON_2, HEX));  
 		  }
 		  debounce = millis();
 	  }
