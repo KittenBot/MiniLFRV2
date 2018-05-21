@@ -226,7 +226,9 @@ void MiniLFRV2::ringRgbShow(int pix, int r, int g, int b){
 }
 
 int MiniLFRV2::getSensor(int index){
-  return analogRead(AD[index]);
+  int adc = analogRead(AD[index]);
+  adc = map(adc,getSensorMin(index),getSensorMax(index),0,1000);
+  return adc;
 }
 
 void MiniLFRV2::setSensorThreshold(int index, int value){

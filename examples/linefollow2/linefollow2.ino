@@ -139,7 +139,7 @@ void echoVersion() {
 void doGetSensor(char * cmd) {
   int idx;
   sscanf(cmd, "%d\n", &idx);
-  int s = map(mini.getSensor(idx),mini.getSensorMin(idx),mini.getSensorMax(idx),0,1000);
+  int s = mini.getSensor(idx);
   Serial.print("M1 "); Serial.print(idx);
   Serial.print(" "); Serial.println(s);
 }
