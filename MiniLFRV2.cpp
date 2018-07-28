@@ -156,7 +156,7 @@ float MiniLFRV2::distance(){
   digitalWrite(EYE_LEFT, HIGH);
   delayMicroseconds(10);
   pinMode(EYE_LEFT, INPUT);
-  temp = pulseIn(EYE_LEFT, HIGH);
+  temp = pulseIn(EYE_LEFT, HIGH, 300000);
   distance = (float)temp / 58.2;
   if(distance > 6){
 	  distance *= 1.28;
@@ -277,11 +277,20 @@ void MiniLFRV2::matrixShow(const char * cmd){
 }
 
 void MiniLFRV2::matrixShowString(const char * str){
+  int len = strlen(str);
   ledMat.begin(0x70);
+  ledMat.clear();
   ledMat.setTextSize(0);
   ledMat.setTextWrap(false);  // we dont want text to wrap so it scrolls nicely
   ledMat.setTextColor(LED_ON);
   int offset = -(strlen(str)+2)*5;
+  if (len <= 4){
+    ledMat.setCursor(0,0);
+    ledMat.print(str);
+    ledMat.writeDisplay();
+    return;
+  }
+  
   for (int x=15; x>=offset; x--) {
     ledMat.clear();
     ledMat.setCursor(x,0);
