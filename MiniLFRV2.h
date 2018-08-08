@@ -85,6 +85,7 @@ public:
 	void ringRgbShow(int pix, int r, int g, int b);
 	// Sensor
 	int getSensor(int index);
+    int getSensorFiltered(int index);
 	void setSensorThreshold(int index, int value);
 	int getSensorThreshold(int index);
 	void setSensorMax(int index, int value);
