@@ -410,10 +410,21 @@ void parseCode(char * cmd) {
       doExtIO(tmp);
       break;
     case 31: // goto line-follow mode
+      mini.playMusic(powerup);
+      mini.startLineFollow();
       mode = LINEFOLLOW;
       break;
     case 32:
+      mini.playMusic(bdding);
       mode = OBJECTAVOID;
+      break;
+    case 33:
+      mode = IDLE;
+      mini.stopMotor();
+      mini.playMusic(powerdown);
+      break;
+    case 34: // toggle spotlight
+      mini.spotlightToggle();
       break;
     case 200:
       doDcSpeed(tmp);

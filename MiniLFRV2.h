@@ -68,6 +68,7 @@ public:
 	// peripheral
 	int buttonGet(int btn);
 	void spotlightSet(int left, int right);
+    void spotlightToggle(void);
 	float distance();
 	float batteryVoltage();
 	uint32_t infraReceive();

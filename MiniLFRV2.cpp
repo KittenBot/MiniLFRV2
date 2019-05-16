@@ -149,6 +149,14 @@ void MiniLFRV2::spotlightSet(int left, int right){
   digitalWrite(EYE_LEFT, !right);
 }
 
+void MiniLFRV2::spotlightToggle(){
+  pinMode(EYE_LEFT, OUTPUT);
+  pinMode(EYE_RIGHT, OUTPUT);
+
+  digitalWrite(EYE_RIGHT, !digitalRead(EYE_RIGHT));
+  digitalWrite(EYE_LEFT, !digitalRead(EYE_LEFT));
+}
+
 float MiniLFRV2::distance(){
   float distance;
   unsigned int temp;
