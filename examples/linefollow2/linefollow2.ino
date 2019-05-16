@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "L3G.h"
 
-#define FIRMWARE "Linefollow V3.9\r\n"
+#define FIRMWARE "Linefollow V4.0\r\n"
 
 const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
 const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
@@ -405,9 +405,15 @@ void parseCode(char * cmd) {
       break;
     case 22:
       doRingRGBShow(tmp);
-      break;      
+      break;
     case 30:
       doExtIO(tmp);
+      break;
+    case 31: // goto line-follow mode
+      mode = LINEFOLLOW;
+      break;
+    case 32:
+      mode = OBJECTAVOID;
       break;
     case 200:
       doDcSpeed(tmp);
@@ -424,7 +430,7 @@ void parseCode(char * cmd) {
     case 210:
       getMotorDiff();
       break;
-	case 214:
+    case 214:
       doJoystick2(tmp);
       break;
     case 215:
@@ -465,12 +471,12 @@ void avoidLoop(){
     mini.stopMotor();
     delay(20);
     mini.speedSet(-100, 100);
-	while(mini.distance()<10){
-		delay(50);
-	}
+    while(mini.distance()<10){
+        delay(50);
+    }
   }else{
     mini.speedSet(random(50,150), random(50,150));
-	delay(20);
+    delay(20);
   }
 }
 
@@ -501,7 +507,7 @@ void loop(){
     avoidLoop();
     if(mini.buttonGet(2) == 1){
       mode = IDLE;
-	  mini.stopMotor();
+      mini.stopMotor();
       mini.playMusic(baddy);
     }
   }else{
