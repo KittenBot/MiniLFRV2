@@ -1,17 +1,54 @@
 #include <Wire.h>
 #include "MiniLFRV2.h"
 #include "Timer.h"
-#include "L3G.h"
+#include <avr/pgmspace.h>
+// #include "L3G.h"
 
-#define FIRMWARE "Linefollow V4.0\r\n"
+#define FIRMWARE "Linefollow V4.2\r\n"
 
-const char ode[] = "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
-const char birthday[] = "c4:3 c:1 d:4 c:4 f e:8 c:3 c:3 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a:3 a:1 a:4 f g f:8 ";
-const char wedding[] = "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
-const char powerup[] = "g4:1 c5 e g:2 e:1 g:3 ";
-const char powerdown[] = "g5:1 d c g4:2 b:1 c5:3 ";
-const char bdding[] = "b5:1 e6:3 ";
-const char baddy[] = "c3:3 r d:2 d r c r f:8 ";
+const char DADADADUM[] PROGMEM= "r4:2 g g g eb:8 r:2 f f f d:8 ";
+const char ENTERTAINER[] PROGMEM= "d4:1 d# e c5:2 e4:1 c5:2 e4:1 c5:3 c:1 d d# e c d e:2 b4:1 d5:2 c:4 ";
+const char PRELUDE[] PROGMEM= "c4:1 e g c5 e g4 c5 e c4 e g c5 e g4 c5 e c4 d g d5 f g4 d5 f c4 d g d5 f g4 d5 f b3 d4 g d5 f g4 d5 f b3 d4 g d5 f g4 d5 f c4 e g c5 e g4 c5 e c4 e g c5 e g4 c5 e ";
+const char ODE[] PROGMEM= "e4 e f g g f e d c c d e e:6 d:2 d:8 e:4 e f g g f e d c c d e d:6 c:2 c:8 ";
+const char NYAN[] PROGMEM= "f#5:2 g# c#:1 d#:2 b4:1 d5:1 c# b4:2 b c#5 d d:1 c# b4:1 c#5:1 d# f# g# d# f# c# d b4 c#5 b4 d#5:2 f# g#:1 d# f# c# d# b4 d5 d# d c# b4 c#5 d:2 b4:1 c#5 d# f# c# d c# b4 c#5:2 b4 c#5 b4 f#:1 g# b:2 f#:1 g# b c#5 d# b4 e5 d# e f# b4:2 b f#:1 g# b f# e5 d# c# b4 f# d# e f# b:2 f#:1 g# b:2 f#:1 g# b b c#5 d# b4 f# g# f# b:2 b:1 a# b f# g# b e5 d# e f# b4:2 c#5 ";
+const char RINGTONE[] PROGMEM= "c4:1 d e:2 g d:1 e f:2 a e:1 f g:2 b c5:4 ";
+const char FUNK[] PROGMEM= "c2:2 c d# c:1 f:2 c:1 f:2 f# g c c g c:1 f#:2 c:1 f#:2 f d# ";
+const char BLUES[] PROGMEM= "c2:2 e g a a# a g e c2:2 e g a a# a g e f a c3 d d# d c a2 c2:2 e g a a# a g e g b d3 f f2 a c3 d# c2:2 e g e g f e d ";
+const char BIRTHDAY[] PROGMEM= "c4:3 c:1 d:4 c:4 f e:8 c:3 c:1 d:4 c:4 g f:8 c:3 c:1 c5:4 a4 f e d a#:3 a#:1 a:4 f g f:8 ";
+const char WEDDING[] PROGMEM= "c4:4 f:3 f:1 f:8 c:4 g:3 e:1 f:8 c:4 f:3 a:1 c5:4 a4:3 f:1 f:4 e:3 f:1 g:8 ";
+const char FUNERAL[] PROGMEM= "c3:4 c:3 c:1 c:4 d#:3 d:1 d:3 c:1 c:3 b2:1 c3:4 ";
+const char PUNCHLINE[] PROGMEM= "c4:3 g3:1 f# g g#:3 g r b c4 ";
+const char BADDY[] PROGMEM= "c3:3 r d:2 d# r c r f#:8 ";
+const char CHASE[] PROGMEM= "a4:1 b c5 b4 a:2 r a:1 b c5 b4 a:2 r a:2 e5 d# e f e d# e b4:1 c5 d c b4:2 r b:1 c5 d c b4:2 r b:2 e5 d# e f e d# e ";
+const char BA_DING[] PROGMEM= "b5:1 e6:3 ";
+const char WAWAWAWAA[] PROGMEM= "e3:3 r:1 d#:3 r:1 d:4 r:1 c#:8 ";
+const char JUMP_UP[] PROGMEM= "c5:1 d e f g ";
+const char JUMP_DOWN[] PROGMEM= "g5:1 f e d c ";
+const char POWER_UP[] PROGMEM= "g4:1 c5 e g:2 e:1 g:3 ";
+const char POWER_DOWN[] PROGMEM= "g5:1 d# c g4:2 b:1 c5:3 ";
+
+const char *const musicTable[] = {
+    DADADADUM,      //0
+    ENTERTAINER,    //1
+    PRELUDE,        //2
+    ODE,            //3
+    NYAN,           //4
+    RINGTONE,       //5
+    FUNK,           //6
+    BLUES,          //7
+    BIRTHDAY,       //8
+    WEDDING,        //9
+    FUNERAL,        //10
+    PUNCHLINE,      //11
+    BADDY,          //12
+    CHASE,          //13
+    BA_DING,        //14
+    WAWAWAWAA,      //15
+    JUMP_UP,        //16
+    JUMP_DOWN,      //17
+    POWER_UP,       //18
+    POWER_DOWN      //19
+};
 
 enum mode {
   IDLE,
@@ -24,9 +61,9 @@ int pidTh;
 int mode = IDLE;
 Timer timer;
 MiniLFRV2 mini;
-L3G gyro; // gyro for calibrate forward movement
+// L3G gyro; // gyro for calibrate forward movement
 
-
+/*
 void gyroCalibrate() {
   int cnt = 0;
   int filteredCount = 0;
@@ -88,6 +125,7 @@ void gyroCalibrate() {
     }
   }
 }
+*/
 
 void sensorCalibration(){
   int adcMin[5] = {999,999,999,999,999};
@@ -126,8 +164,8 @@ void sensorCalibration(){
 void lineFollowWork() {
   int ret = mini.lineFollow();
   if(ret == -1){
-    mini.playMusic(powerdown);
-    mode = IDLE;  
+    playLocalMusic(19);
+    mode = IDLE;
   }
 }
 
@@ -250,6 +288,15 @@ void doRGBBrightness(char * cmd){
 
 void doMusic(char * cmd){
     mini.playMusic(cmd);
+}
+
+
+void playLocalMusic(int idx){
+    char tmp[365];
+    int len = strlen_P(musicTable[idx]);
+    memcpy_P(tmp, musicTable[idx], len);
+    tmp[len] = 0;
+    mini.playMusic(tmp);
 }
 
 void doBuzzer(char * cmd) {
@@ -406,22 +453,26 @@ void parseCode(char * cmd) {
     case 22:
       doRingRGBShow(tmp);
       break;
+    case 23:
+      int idx = atoi(tmp);
+      playLocalMusic(idx);
+      break;
     case 30:
       doExtIO(tmp);
       break;
     case 31: // goto line-follow mode
-      mini.playMusic(powerup);
+      playLocalMusic(18);
       mini.startLineFollow();
       mode = LINEFOLLOW;
       break;
     case 32:
-      mini.playMusic(bdding);
+      playLocalMusic(14);
       mode = OBJECTAVOID;
       break;
     case 33:
       mode = IDLE;
       mini.stopMotor();
-      mini.playMusic(powerdown);
+      playLocalMusic(19);
       break;
     case 34: // toggle spotlight
       mini.spotlightToggle();
@@ -447,9 +498,9 @@ void parseCode(char * cmd) {
     case 215:
       setThresholdAll(tmp);
       break;
-    case 300:
-      gyroCalibrate();
-      break;
+    //case 300:
+    //  gyroCalibrate();
+    //  break;
     case 310:
       sensorCalibration();
       break;
@@ -497,7 +548,7 @@ int8_t bufindex;
 void loop(){
   if(mode == IDLE){
     if(mini.buttonGet(1) == 1){
-      mini.playMusic(powerup);
+      playLocalMusic(18);
       if(mini.buttonGet(1) == 1){
         mini.buzz(1000, 200, 300);
         mini.buzz(1000, 200, 300);
@@ -508,7 +559,7 @@ void loop(){
       }
     }
     if(mini.buttonGet(2) == 1){
-      mini.playMusic(bdding);
+      playLocalMusic(14);
       mode = OBJECTAVOID;
     }
     mini.loop();
@@ -519,7 +570,7 @@ void loop(){
     if(mini.buttonGet(2) == 1){
       mode = IDLE;
       mini.stopMotor();
-      mini.playMusic(baddy);
+      playLocalMusic(12);
     }
   }else{
     mini.loop();  
