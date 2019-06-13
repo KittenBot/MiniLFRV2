@@ -449,7 +449,7 @@ void MiniLFRV2::loop(){
       irdecoded = irresult.value;
 	  // todo: add callback entry for button and others  
 	  if(!loopCallback(irdecoded)){
-		Serial.println("TRIG infra "+String(irdecoded, HEX));  
+		Serial.println("TRIG infra "+String(irdecoded, HEX));
 	  }
     }
     irrecv.resume(); // Receive the next value

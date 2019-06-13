@@ -290,13 +290,12 @@ void doMusic(char * cmd){
     mini.playMusic(cmd);
 }
 
-
+char notebuff[365];
 void playLocalMusic(int idx){
-    char tmp[365];
     int len = strlen_P(musicTable[idx]);
-    memcpy_P(tmp, musicTable[idx], len);
-    tmp[len] = 0;
-    mini.playMusic(tmp);
+    memcpy_P(notebuff, musicTable[idx], len);
+    notebuff[len] = 0;
+    mini.playMusic(notebuff);
 }
 
 void doBuzzer(char * cmd) {
@@ -383,7 +382,6 @@ void parseCode(char * cmd) {
   char * tmp;
   code = atoi(cmd);
   cmd = strtok_r(cmd, " ", &tmp);
-
   switch (code) {
     case 0:
       echoVersion();
@@ -454,8 +452,7 @@ void parseCode(char * cmd) {
       doRingRGBShow(tmp);
       break;
     case 23:
-      int idx = atoi(tmp);
-      playLocalMusic(idx);
+      playLocalMusic(atoi(tmp));
       break;
     case 30:
       doExtIO(tmp);
@@ -498,9 +495,6 @@ void parseCode(char * cmd) {
     case 215:
       setThresholdAll(tmp);
       break;
-    //case 300:
-    //  gyroCalibrate();
-    //  break;
     case 310:
       sensorCalibration();
       break;
