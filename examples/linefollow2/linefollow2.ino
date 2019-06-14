@@ -2,7 +2,6 @@
 #include "MiniLFRV2.h"
 #include "Timer.h"
 #include <avr/pgmspace.h>
-// #include "L3G.h"
 
 #define FIRMWARE "Linefollow V4.2\r\n"
 
@@ -61,71 +60,6 @@ int pidTh;
 int mode = IDLE;
 Timer timer;
 MiniLFRV2 mini;
-// L3G gyro; // gyro for calibrate forward movement
-
-/*
-void gyroCalibrate() {
-  int cnt = 0;
-  int filteredCount = 0;
-  float diff;
-  float diffInte;
-  float gz = 0;
-  float gzStill = 0;
-  long lastmillis;
-  // 1. stop and init gyro
-  //  delay(5000);
-  mini.stopMotor();
-  if (!gyro.init()) {
-    Serial.println("Gyro Init Fail");
-    return;
-  }
-  gyro.enableDefault();
-  // 2. get the still z-axis value
-  while (cnt++ < 20) {
-    gyro.read();
-    gz = gz * 0.7 + (float)gyro.g.z * 0.3;
-    delay(50);
-  }
-  // 3. output initial values
-  gzStill = gz;
-  //Serial.print("Dc Diff: "); Serial.println(mini.motorDiffGet());
-  //Serial.print("Init Gz: "); Serial.println(gzStill);
-  lastmillis = millis();
-  mini.motorDiffSet(1.0);;
-  diffInte = 0;
-  mini.speedSet(120,120);
-  // 4. start auto calibrate
-  while (1) {
-    gyro.read();
-    gz = gz * 0.7 + (float)gyro.g.z * 0.3;
-    delay(50);
-    if (millis() - lastmillis > 100) {
-      diff = gz - gzStill;
-      lastmillis = millis();
-      if (diff > 1000) {
-        filteredCount = 0;
-        diffInte += 0.02;
-      } else if (diff < -1000) {
-        filteredCount = 0;
-        diffInte -= 0.02;
-      } else {
-        filteredCount++;
-        if (filteredCount == 6) {
-          mini.motorDiffSet(1.0 + diffInte);
-          mini.syncSetup();
-          mini.stopMotor();
-          Serial.println("M300");
-          return;
-        }
-      }
-      //Serial.print(" Z: "); Serial.print(diff);
-      //Serial.print(" D: "); Serial.println(mini.motorDiffGet());
-      mini.motorDiffSet(1.0 + diffInte);
-      mini.speedSet(120,120);
-    }
-  }
-}
-*/
 
 void sensorCalibration(){
   int adcMin[5] = {999,999,999,999,999};
@@ -172,6 +106,15 @@ void lineFollowWork() {
 void echoVersion() {
   Serial.print("M0 ");
   Serial.print(FIRMWARE);
+}
+
+void doGetSensorBatch(char * cmd) {
+  int getType = atoi(cmd);
+  Serial.print("M10 ");Serial.print(mini.getSensorFiltered(0));
+  Serial.print(" ");Serial.print(mini.getSensorFiltered(1));
+  Serial.print(" ");Serial.print(mini.getSensorFiltered(2));
+  Serial.print(" ");Serial.print(mini.getSensorFiltered(3));
+  Serial.print(" ");Serial.println(mini.getSensorFiltered(4));
 }
 
 void doGetSensor(char * cmd) {
@@ -414,6 +357,9 @@ void parseCode(char * cmd) {
       break;
     case 9: // button status
       doButton(tmp);
+      break;
+    case 10:
+      doGetSensorBatch(tmp);
       break;
     case 11: // irvalue
       doInfraRead();
